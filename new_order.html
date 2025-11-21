@@ -1173,13 +1173,14 @@ saveBtn.addEventListener('click', () => {
     city: city.value,
     cityId: city.dataset.selectedId || '',
     address: address.value,
-    phone: phone.value,
+    phone: phone.value
   };
 
   const finalOrder = {
     consignor: consignor,
     consignees: consignees,
-    app_id: localStorage.getItem("app_id"),
+    app_id: localStorage.getItem("app_id") || 
+    "Mzk-",
     savedAt: new Date().toISOString()
   };
 
@@ -1187,7 +1188,7 @@ saveBtn.addEventListener('click', () => {
   console.log(" FINAL ORDER JSON:", JSON.stringify(finalOrder, null, 2));
 
   // SEND FINAL ORDER TO SERVER
-  fetch("save_order.php", {
+  fetch("https://www.loginlogistics.in/main/driverapp/action/order.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(finalOrder)

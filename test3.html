@@ -60,6 +60,21 @@
     .page-number:hover:not(.active) {
       background-color: #e9ecef;
     }
+    .payment-status {
+      font-weight: 500;
+    }
+    .payment-paid {
+      color: #28a745;
+    }
+    .payment-to-pay {
+      color: #dc3545;
+    }
+    .payment-unknown {
+      color: #6c757d;
+    }
+    .card-body p {
+      margin-bottom: 0.4rem;
+    }
   </style>
 </head>
 
@@ -150,8 +165,28 @@
               <input type="text" class="form-control" id="editConsigner" required>
             </div>
             <div class="mb-3">
+              <label class="form-label">Consignee</label>
+              <input type="text" class="form-control" id="editConsignee" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Stop</label>
+              <input type="text" class="form-control" id="editStop">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Route</label>
+              <input type="text" class="form-control" id="editRoute">
+            </div>
+            <div class="mb-3">
               <label class="form-label">Date</label>
               <input type="date" class="form-control" id="editDate" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Payment Status</label>
+              <select class="form-control" id="editPaymentStatus">
+                <option value="paid">Paid</option>
+                <option value="to-pay">To Pay</option>
+                <option value="unknown">Unknown</option>
+              </select>
             </div>
           </form>
         </div>
@@ -207,10 +242,11 @@
 
     // Function to generate demo orders
     function generateDemoOrders(count) {
-      const statuses = ['Pending', 'In Transit', 'Delivered', 'Processing'];
+      const paymentStatuses = ['paid', 'to-pay', 'unknown'];
       const consigners = ['ABC Suppliers', 'XYZ Corporation', 'Global Traders', 'Prime Logistics', 'Quick Ship'];
       const consignees = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'David Brown', 'Emma Davis'];
-      const cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia'];
+      const stops = ['Stop A', 'Stop B', 'Stop C', 'Stop D', 'Stop E', 'Stop F'];
+      const routes = ['Route 1', 'Route 2', 'Route 3', 'Route 4', 'Route 5'];
       
       const orders = [];
       const startDate = new Date('2024-01-01');
@@ -220,16 +256,19 @@
         const orderDate = new Date(startDate);
         orderDate.setDate(orderDate.getDate() + randomDays);
         
+        // Randomly decide if some fields should be empty
+        const hasStop = Math.random() > 0.3;
+        const hasRoute = Math.random() > 0.3;
+        
         orders.push({
           id: `ORD${String(i).padStart(5, '0')}`,
-          consignee: consignees[Math.floor(Math.random() * consignees.length)],
-          consigner: consigners[Math.floor(Math.random() * consigners.length)],
-          date: orderDate.toISOString().split('T')[0],
-          status: statuses[Math.floor(Math.random() * statuses.length)],
           podNo: `POD${String(i).padStart(5, '0')}`,
-          supplierInvoice: `INV${String(i).padStart(5, '0')}`,
-          phone: `+1-555-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-          address: `${Math.floor(Math.random() * 9999) + 1} ${cities[Math.floor(Math.random() * cities.length)]} Street, ${cities[Math.floor(Math.random() * cities.length)]}`
+          consigner: consigners[Math.floor(Math.random() * consigners.length)],
+          consignee: consignees[Math.floor(Math.random() * consignees.length)],
+          stop: hasStop ? stops[Math.floor(Math.random() * stops.length)] : '',
+          route: hasRoute ? routes[Math.floor(Math.random() * routes.length)] : '',
+          date: orderDate.toISOString().split('T')[0],
+          paymentStatus: paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)]
         });
       }
       
@@ -281,7 +320,8 @@
 
       let html = '';
       currentOrders.forEach((order, index) => {
-        const statusClass = getStatusClass(order.status);
+        const paymentStatusClass = getPaymentStatusClass(order.paymentStatus);
+        const paymentStatusText = getPaymentStatusText(order.paymentStatus);
         const globalIndex = (currentPage - 1) * ORDERS_PER_PAGE + index;
         
         html += `
@@ -289,15 +329,14 @@
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="mb-0">Order No: <strong>#${order.id}</strong></h6>
-                <span class="${statusClass}">${order.status}</span>
+                <span class="payment-status ${paymentStatusClass}">${paymentStatusText}</span>
               </div>
 
-              <p class="mb-1"><strong>Consignee:</strong> ${order.consignee || 'N/A'}</p>
-              <p class="mb-1"><strong>Consigner:</strong> ${order.consigner || 'N/A'}</p>
-              ${order.podNo ? `<p class="mb-1"><strong>POD No:</strong> ${order.podNo}</p>` : ''}
-              ${order.supplierInvoice ? `<p class="mb-1"><strong>Supplier Invoice:</strong> ${order.supplierInvoice}</p>` : ''}
-              ${order.phone ? `<p class="mb-1"><strong>Phone:</strong> ${order.phone}</p>` : ''}
-              ${order.address ? `<p class="mb-2"><strong>Address:</strong> ${order.address}</p>` : ''}
+              ${order.podNo ? `<p><strong>POD No:</strong> ${order.podNo}</p>` : ''}
+              ${order.consigner ? `<p><strong>Consigner:</strong> ${order.consigner}</p>` : ''}
+              ${order.consignee ? `<p><strong>Consignee:</strong> ${order.consignee}</p>` : ''}
+              ${order.stop ? `<p><strong>Stop:</strong> ${order.stop}</p>` : ''}
+              ${order.route ? `<p><strong>Route:</strong> ${order.route}</p>` : ''}
 
               <div class="btn-group mt-2">
                 <button class="btn btn-primary btn-sm btn-view" onclick="viewOrderDetails('${order.id}')">
@@ -390,28 +429,41 @@
           orderToEdit = allOrders[index];
           document.getElementById("editOrderId").value = orderToEdit.id;
           document.getElementById("editConsigner").value = orderToEdit.consigner || '';
+          document.getElementById("editConsignee").value = orderToEdit.consignee || '';
+          document.getElementById("editStop").value = orderToEdit.stop || '';
+          document.getElementById("editRoute").value = orderToEdit.route || '';
           document.getElementById("editDate").value = formatDateForInput(orderToEdit.date);
+          document.getElementById("editPaymentStatus").value = orderToEdit.paymentStatus || 'unknown';
           editModal.show();
         });
       });
     }
 
-    // Function to get status class
-    function getStatusClass(status) {
-      if (!status) return "badge bg-secondary";
+    // Function to get payment status class
+    function getPaymentStatusClass(status) {
+      if (!status) return "payment-unknown";
       
-      switch (status.toLowerCase()) {
-        case "in transit":
-        case "in-transit":
-          return "badge bg-info";
-        case "delivered":
-          return "badge bg-success";
-        case "pending":
-          return "badge bg-warning text-dark";
-        case "processing":
-          return "badge bg-primary";
+      switch (status) {
+        case "paid":
+          return "payment-paid";
+        case "to-pay":
+          return "payment-to-pay";
         default:
-          return "badge bg-secondary";
+          return "payment-unknown";
+      }
+    }
+
+    // Function to get payment status text
+    function getPaymentStatusText(status) {
+      if (!status) return "Unknown";
+      
+      switch (status) {
+        case "paid":
+          return "Paid";
+        case "to-pay":
+          return "To Pay";
+        default:
+          return "Unknown";
       }
     }
 
@@ -495,15 +547,19 @@
     document.getElementById("saveEditBtn").addEventListener("click", async () => {
       const newId = document.getElementById("editOrderId").value.trim();
       const newConsigner = document.getElementById("editConsigner").value.trim();
+      const newConsignee = document.getElementById("editConsignee").value.trim();
+      const newStop = document.getElementById("editStop").value.trim();
+      const newRoute = document.getElementById("editRoute").value.trim();
       const newDate = document.getElementById("editDate").value;
+      const newPaymentStatus = document.getElementById("editPaymentStatus").value;
 
-      if (!newId || !newConsigner || !newDate) {
-        return alert("All fields required.");
+      if (!newId || !newConsigner || !newConsignee || !newDate) {
+        return alert("Order ID, Consigner, Consignee, and Date are required fields.");
       }
 
       try {
         // In real implementation, send update request to backend
-        // await fetch('update_order.php', { method: 'POST', body: JSON.stringify({ orderId: orderToEdit.id, updates: { id: newId, consigner: newConsigner, date: newDate } }) });
+        // await fetch('update_order.php', { method: 'POST', body: JSON.stringify({ orderId: orderToEdit.id, updates: { id: newId, consigner: newConsigner, consignee: newConsignee, stop: newStop, route: newRoute, date: newDate, paymentStatus: newPaymentStatus } }) });
         
         // For demo, update local array
         const orderIndex = allOrders.findIndex(order => order.id === orderToEdit.id);
@@ -512,7 +568,11 @@
             ...allOrders[orderIndex],
             id: newId,
             consigner: newConsigner,
-            date: newDate
+            consignee: newConsignee,
+            stop: newStop,
+            route: newRoute,
+            date: newDate,
+            paymentStatus: newPaymentStatus
           };
         }
         
