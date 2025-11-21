@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details</title>
+
+    <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/view.css">
+
+    <!-- Font Awesome for Arrow Icon -->
+   <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.css" />
+</head>
+
+<body>
+  
+<div class="order-card">
+
+    <span class="text-primary mb-5"  style="font-weight: bold; font-size: 22px;">
+  <i class="fas fa-arrow-left me-2" style="cursor:pointer; color:black" onclick="history.back()"></i>&nbsp;
+    POD No: 21435-291025/10 Order Details
+    
+    </span>
+
+<div class="d-flex justify-content-end gap-2 mt-3">
+    <button class="btn btn-primary" onclick="window.print()">Print</button>
+</div>
+
+
+    <!-- ✅ Your Existing Content Below -->
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Warehouse</div>
+        <div class="col-md-8">LOG-IN LOGISTICS</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consignor</div>
+        <div class="col-md-8">Ek a/y</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consignor Phone </div>
+        <div class="col-md-8">676767788</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consignor Inv no </div>
+        <div class="col-md-8">54556</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consignor Address </div>
+        <div class="col-md-8">Kottakkal</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consignor City</div>
+        <div class="col-md-8">Kottakkal</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Pickup Route</div>
+        <div class="col-md-8"> perithalmanna</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consignee</div>
+        <div class="col-md-8">Sd</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consignee Phone</div>
+        <div class="col-md-8">4398985498</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consigee Address</div>
+        <div class="col-md-8">perithalmanna</div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-4 fw-bold">Consignee City</div>
+        <div class="col-md-8">Vengara, Malappuram</div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4 fw-bold">Payment</div>
+        <div class="col-md-8">To pay</div>
+    </div>   
+     <div class="row mb-3">
+        <div class="col-md-4 fw-bold">Notes</div>
+        <div class="col-md-8"></div> 
+    </div>
+    </div>
+
+
+    <div class="order-card">
+    <h5 class="section-title">Particulars</h5>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Particular</th>
+                <th>Small</th>
+                <th>Medium</th>
+                <th>Large</th>
+                <th>X-Large</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Box</td>
+                <td>1</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>Packet</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>Cover</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>Envelope</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+        </tbody>
+    </table>
+
+   <div class="d-flex justify-content-end gap-3 mt-3">
+        <div class="col-md-6 fw-bold">Total Qty</div>
+        <div class="col-md-6">1</div>
+    </div>
+
+   <div class="row">
+     <div class="d-flex justify-content-end gap-3 mt-3">
+    <div class="col-md-6 fw-bold">Total Amount</div>
+        
+    <div class="col-md-3">39.00</div>
+    </div>
+   </div>
+
+
+</div>
+<script>
+function goBackPage() {
+    window.location.href = "view_order.html"; 
+}
+</script>
+
+<script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Customer Order - Consignor & Consignee</title>
+
+  <!-- Bootstrap -->
+ <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
+   <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
+     <link rel="stylesheet" href="css/order_edit.css"> 
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <i class="fa-solid fa-arrow-left me-2" id="backButton"></i> &nbsp;New Customer Order
+  </header>
+
+  <main class="container my-4 pb-5">
+    <form id="combinedForm" novalidate>
+
+      <!-- CONSIGNOR DETAILS -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="section-title"><i class="fa-solid fa-user"></i> Consignor Details</div>
+
+          <div class="row mb-5">
+            <div class="col-md-6">
+              <label class="form-label">Company Name *</label>
+              <input type="text-area" class="form-control required-field">
+              <div class="error-message">Please enter company name.</div>
+            </div>
+        
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">City *</label>
+              <textarea type="text" class="form-control required-field"></textarea>
+              <div class="error-message">Please enter city.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Supplier Invoice *</label>
+              <input type="text" class="form-control required-field">
+              <div class="error-message">Please enter supplier invoice.</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Address *</label>
+            <textarea type="text" class="form-control required-field"></textarea>
+            <div class="error-message">Please enter address.</div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" class="form-control required-field" pattern="[0-9]{10}" placeholder="10-digit number">
+              <div class="error-message">Enter a valid 10-digit number.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Courier Status *</label>
+              <select class="form-select required-field">
+                <option value="" selected disabled hidden></option>
+                <option>Pending</option>
+                <option>In-Transit</option>
+                <option>Delivered</option>
+              </select>
+              <div class="error-message">Please select courier status.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONSIGNEE DETAILS -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="section-title"><i class="fa-solid fa-user"></i> Consignee Details</div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Consignee Name *</label>
+              <input type="text" class="form-control required-field">
+              <div class="error-message">Please enter consignee name.</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">City *</label>
+            <textarea type="text" class="form-control required-field"></textarea>
+            <div class="error-message">Please enter city.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Route *</label>
+            <input type="text" class="form-control required-field">
+            <div class="error-message">Please enter route.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Address *</label>
+            <textarea type="text" class="form-control required-field"></textarea>
+            <div class="error-message">Please enter address.</div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" class="form-control required-field" pattern="[0-9]{10}" placeholder="10-digit number">
+              <div class="error-message">Enter a valid 10-digit phone number.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Courier Station *</label>
+              <input type="text" class="form-control required-field">
+              <div class="error-message">Please enter courier station.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOX AND COVER SIZE (MANUAL ENTRY) -->
+      <div class="card mb-4">
+  <div class="card-body">
+    <div class="section-title"><i class="fa-solid fa-box"></i> Packaging Details</div>
+
+    <div class="row">
+
+      <!-- ✅ Box Section (Left Column) -->
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="section-title"><i class="fa-solid fa-cube"></i> Box</div>
+          <div class="card-body">
+            <div id="boxSection">
+
+              <div class="row align-items-center mb-2">
+                <div class="col-4 fw-bold">Small</div>
+                <div class="col-4"><input type="number" class="form-control box-qty" placeholder="Qty" min="0"></div>
+                <div class="col-4"><input type="number" class="form-control box-price" placeholder="Price" min="0"></div>
+              </div>
+
+              <div class="row align-items-center mb-2">
+                <div class="col-4 fw-bold">Medium</div>
+                <div class="col-4"><input type="number" class="form-control box-qty" placeholder="Qty" min="0"></div>
+                <div class="col-4"><input type="number" class="form-control box-price" placeholder="Price" min="0"></div>
+              </div>
+
+              <div class="row align-items-center mb-2">
+                <div class="col-4 fw-bold">Large</div>
+                <div class="col-4"><input type="number" class="form-control box-qty" placeholder="Qty" min="0"></div>
+                <div class="col-4"><input type="number" class="form-control box-price" placeholder="Price" min="0"></div>
+              </div>
+
+              <div class="row align-items-center">
+                <div class="col-4 fw-bold">X-Large</div>
+                <div class="col-4"><input type="number" class="form-control box-qty" placeholder="Qty" min="0"></div>
+                <div class="col-4"><input type="number" class="form-control box-price" placeholder="Price" min="0"></div>
+              </div>
+
+            </div>
+            <div class="error-message" id="boxError">Please enter quantity and price for at least one box.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Cover Section (Right Column) -->
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="section-title"><i class="fa-solid fa-envelope"></i> Cover</div>
+          <div class="card-body">
+            <div id="coverSection">
+
+              <div class="row align-items-center mb-2">
+                <div class="col-4 fw-bold">Small</div>
+                <div class="col-4"><input type="number" class="form-control cover-qty" placeholder="Qty" min="0"></div>
+                <div class="col-4"><input type="number" class="form-control cover-price" placeholder="Price" min="0"></div>
+              </div>
+
+              <div class="row align-items-center mb-2">
+                <div class="col-4 fw-bold">Medium</div>
+                <div class="col-4"><input type="number" class="form-control cover-qty" placeholder="Qty" min="0"></div>
+                <div class="col-4"><input type="number" class="form-control cover-price" placeholder="Price" min="0"></div>
+              </div>
+
+              <div class="row align-items-center mb-2">
+                <div class="col-4 fw-bold">Large</div>
+                <div class="col-4"><input type="number" class="form-control cover-qty" placeholder="Qty" min="0"></div>
+                <div class="col-4"><input type="number" class="form-control cover-price" placeholder="Price" min="0"></div>
+              </div>
+
+              <div class="row align-items-center">
+                <div class="col-4 fw-bold">X-Large</div>
+                <div class="col-4"><input type="number" class="form-control cover-qty" placeholder="Qty" min="0"></div>
+                <div class="col-4"><input type="number" class="form-control cover-price" placeholder="Price" min="0"></div>
+              </div>
+
+            </div>
+            <div class="error-message" id="coverError">Please enter quantity and price for at least one cover.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+      <!-- PAYMENT TYPE -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="section-title"><i class="fa-solid fa-credit-card"></i> Payment Type</div>
+          <div class="row text-center">
+            <div class="col-6">
+              <div class="payment-box" id="toPayBox" onclick="selectPayment('toPay')">
+                <i class="fa-solid fa-money-bill-wave fa-2x mb-2"></i>
+                <div>To Pay</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="payment-box" id="paidOrderBox" onclick="selectPayment('paidOrder')">
+                <i class="fa-solid fa-circle-check fa-2x mb-2"></i>
+                <div>Paid Order</div>
+              </div>
+            </div>
+          </div>
+          <div class="error-message mt-2" id="paymentError">Please select a payment type.</div>
+        </div>
+      </div>
+
+    </form>
+  </main>
+
+  <!-- Fixed Footer Buttons -->
+  <footer class="fixed-footer">
+    <div class="container d-flex gap-2">
+      <button type="button" class="btn btn-save w-50" id="saveButton">
+        <i class="fas fa-save me-2"></i> Save
+      </button>
+      <button type="submit" class="btn btn-continue w-50" id="nextButton">
+        Next <i class="fas fa-arrow-right ms-2"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script>
+    document.getElementById('backButton').addEventListener('click', function() {
+      window.location.href = 'delivery_status.html';
+    });
+
+    let selectedPayment = null;
+
+    function selectPayment(type) {
+      document.querySelectorAll('.payment-box').forEach(box => box.classList.remove('active'));
+      document.getElementById(type + 'Box').classList.add('active');
+      selectedPayment = type;
+      document.getElementById('paymentError').style.display = 'none';
+    }
+
+    document.getElementById('nextButton').addEventListener('click', function(e) {
+      e.preventDefault();
+      validateForm();
+    });
+
+    document.getElementById('saveButton').addEventListener('click', function() {
+      validateForm();
+      alert('✅ Form saved successfully!');
+    });
+
+    function validateForm() {
+      let valid = true;
+      document.querySelectorAll('.error-message').forEach(e => e.style.display = 'none');
+      document.querySelectorAll('.form-control, .form-select').forEach(f => f.classList.remove('invalid-input'));
+
+      document.querySelectorAll('.required-field').forEach(input => {
+        if (input.value.trim() === '') {
+          showError(input, 'This field is required.');
+          valid = false;
+        }
+      });
+
+      if (!selectedPayment) {
+        document.getElementById('paymentError').style.display = 'block';
+        valid = false;
+      }
+
+      if (valid) {
+        alert('✅ All fields validated successfully!');
+      } else {
+        alert('⚠️ Please correct highlighted fields.');
+      }
+    }
+
+    function showError(input, message) {
+      const error = input.parentElement.querySelector('.error-message');
+      if (error) {
+        error.textContent = message;
+        error.style.display = 'block';
+      }
+      input.classList.add('invalid-input');
+    }
+  </script>
+
+  <!-- Bootstrap JS -->
+
+  <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
+</body>
+</html>

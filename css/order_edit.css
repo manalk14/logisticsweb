@@ -1,0 +1,57 @@
+    body {
+      background-color: #f8f9fa;
+    }
+    .app-header {
+      background-color: #ffc107;
+      color: #212529;
+      padding: 20px 15px;
+      font-weight: bold;
+      font-size:1.3rem;
+      display: flex;
+      align-items: center;
+    }
+    .app-header i {
+      cursor: pointer;
+    }
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+      color: #000000;
+    }
+    .error-message {
+      color: red;
+      font-size: 0.85rem;
+      display: none;
+    }
+    .invalid-input {
+      border-color: red !important;
+    }
+    .payment-box {
+      border: 2px solid #ccc;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .payment-box.active {
+      border-color: #ffc107;
+      background-color: #fff3cd;
+    }
+    .fixed-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      border-top: 1px solid #dee2e6;
+      padding: 10px 15px;
+    }
+    .btn-save {
+      background-color: #6c757d;
+      color: #fff;
+    }
+    .btn-continue {
+      background-color: #ffc107;
+      color: #000;
+    }

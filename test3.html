@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View Orders</title>
+
+  <!-- ✅ Bootstrap CSS -->
+  <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- ✅ Bootstrap Icons -->
+  <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" /> 
+  <link rel="stylesheet" href="css/view_order.css" />
+  
+  <style>
+    .loading-spinner {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .no-orders {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+    }
+    .pagination-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+    .page-info {
+      font-weight: 500;
+      color: #495057;
+    }
+    .pagination-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .page-numbers {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .page-number {
+      padding: 5px 12px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      cursor: pointer;
+      background: white;
+    }
+    .page-number.active {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .page-number:hover:not(.active) {
+      background-color: #e9ecef;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ✅ Header Section -->
+  <div class="header bg-orange shadow-sm">
+    <div class="d-flex align-items-center p-3">
+      <button id="backbtn" class="btn btn-link text-dark">
+        <i class="fa-solid fa-arrow-left fa-lg"></i>
+      </button>
+      <h5 class="mb-0 fw-bold">View Orders</h5>
+    </div>
+  </div>
+
+  <!-- ✅ Main Content -->
+  <main class="container mt-3 mb-5">
+    <!-- Orders List -->
+    <div id="orderList"></div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading orders...</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" id="paginationContainer" style="display: none;">
+      <div class="pagination-buttons">
+        <button class="btn btn-outline-primary" id="prevBtn">
+          <i class="fa-solid fa-chevron-left me-1"></i> Previous
+        </button>
+      </div>
+      
+      <div class="page-info" id="pageInfo"></div>
+      
+      <div class="pagination-buttons">
+        <button class="btn btn-outline-primary" id="nextBtn">
+          Next <i class="fa-solid fa-chevron-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- No Orders Message -->
+    <div class="no-orders" id="noOrdersMessage" style="display: none;">
+      <i class="fa-solid fa-box-open fa-3x mb-3"></i>
+      <h5>No Orders Found</h5>
+      <p>There are no orders to display at the moment.</p>
+    </div>
+  </main>
+
+  <!-- 🗑 Delete Reason Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Reason for Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <textarea id="deleteReason" class="form-control" rows="3" placeholder="Enter reason..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ Edit Order Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm">
+            <div class="mb-3">
+              <label class="form-label">Order Number</label>
+              <input type="text" class="form-control" id="editOrderId" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Consigner</label>
+              <input type="text" class="form-control" id="editConsigner" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-control" id="editDate" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Bootstrap JS -->
+  <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Configuration
+    const ORDERS_PER_PAGE = 20;
+    let currentPage = 1;
+    let totalPages = 0;
+    let allOrders = [];
+    let isLoading = false;
+
+    // DOM Elements
+    const orderList = document.getElementById("orderList");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+    const paginationContainer = document.getElementById("paginationContainer");
+    const pageInfo = document.getElementById("pageInfo");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const noOrdersMessage = document.getElementById("noOrdersMessage");
+    const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+    const editModal = new bootstrap.Modal(document.getElementById("editModal"));
+
+    let orderToDelete = null;
+    let orderToEdit = null;
+
+    // Demo data for testing
+    const demoOrders = generateDemoOrders(85); // Generate 85 demo orders
+
+    // 🔙 Back button
+    document.getElementById('backbtn').addEventListener('click', function() {
+      window.location.href = 'index.html';
+    });
+
+    // Navigation buttons
+    prevBtn.addEventListener('click', goToPreviousPage);
+    nextBtn.addEventListener('click', goToNextPage);
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadOrders();
+    });
+
+    // Function to generate demo orders
+    function generateDemoOrders(count) {
+      const statuses = ['Pending', 'In Transit', 'Delivered', 'Processing'];
+      const consigners = ['ABC Suppliers', 'XYZ Corporation', 'Global Traders', 'Prime Logistics', 'Quick Ship'];
+      const consignees = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'David Brown', 'Emma Davis'];
+      const cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia'];
+      
+      const orders = [];
+      const startDate = new Date('2024-01-01');
+      
+      for (let i = 1; i <= count; i++) {
+        const randomDays = Math.floor(Math.random() * 365);
+        const orderDate = new Date(startDate);
+        orderDate.setDate(orderDate.getDate() + randomDays);
+        
+        orders.push({
+          id: `ORD${String(i).padStart(5, '0')}`,
+          consignee: consignees[Math.floor(Math.random() * consignees.length)],
+          consigner: consigners[Math.floor(Math.random() * consigners.length)],
+          date: orderDate.toISOString().split('T')[0],
+          status: statuses[Math.floor(Math.random() * statuses.length)],
+          podNo: `POD${String(i).padStart(5, '0')}`,
+          supplierInvoice: `INV${String(i).padStart(5, '0')}`,
+          phone: `+1-555-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+          address: `${Math.floor(Math.random() * 9999) + 1} ${cities[Math.floor(Math.random() * cities.length)]} Street, ${cities[Math.floor(Math.random() * cities.length)]}`
+        });
+      }
+      
+      return orders;
+    }
+
+    // Function to load orders
+    async function loadOrders() {
+      try {
+        showLoading(true);
+        
+        // In real implementation, fetch from backend:
+        // const response = await fetch('get_orders.php');
+        // const data = await response.json();
+        // allOrders = data.orders || [];
+        
+        // For demo, use generated data
+        allOrders = demoOrders;
+        
+        // Calculate total pages
+        totalPages = Math.ceil(allOrders.length / ORDERS_PER_PAGE);
+        
+        if (allOrders.length === 0) {
+          showNoOrdersMessage();
+        } else {
+          renderCurrentPage();
+          updatePagination();
+        }
+        
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        alert('Error loading orders: ' + error.message);
+        showNoOrdersMessage();
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Function to render current page
+    function renderCurrentPage() {
+      const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
+      const endIndex = startIndex + ORDERS_PER_PAGE;
+      const currentOrders = allOrders.slice(startIndex, endIndex);
+
+      if (currentOrders.length === 0) {
+        orderList.innerHTML = '<div class="no-orders">No orders on this page</div>';
+        return;
+      }
+
+      let html = '';
+      currentOrders.forEach((order, index) => {
+        const statusClass = getStatusClass(order.status);
+        const globalIndex = (currentPage - 1) * ORDERS_PER_PAGE + index;
+        
+        html += `
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Order No: <strong>#${order.id}</strong></h6>
+                <span class="${statusClass}">${order.status}</span>
+              </div>
+
+              <p class="mb-1"><strong>Consignee:</strong> ${order.consignee || 'N/A'}</p>
+              <p class="mb-1"><strong>Consigner:</strong> ${order.consigner || 'N/A'}</p>
+              ${order.podNo ? `<p class="mb-1"><strong>POD No:</strong> ${order.podNo}</p>` : ''}
+              ${order.supplierInvoice ? `<p class="mb-1"><strong>Supplier Invoice:</strong> ${order.supplierInvoice}</p>` : ''}
+              ${order.phone ? `<p class="mb-1"><strong>Phone:</strong> ${order.phone}</p>` : ''}
+              ${order.address ? `<p class="mb-2"><strong>Address:</strong> ${order.address}</p>` : ''}
+
+              <div class="btn-group mt-2">
+                <button class="btn btn-primary btn-sm btn-view" onclick="viewOrderDetails('${order.id}')">
+                  <i class="fa-solid fa-eye"></i> View
+                </button>
+                <button class="btn btn-warning btn-sm btn-edit" data-index="${globalIndex}">
+                  <i class="fa-solid fa-pencil"></i> Edit
+                </button>
+                <button class="btn btn-danger btn-sm btn-delete" data-index="${globalIndex}">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
+
+              <div class="text-muted small mt-2">
+                <i class="fa-solid fa-calendar me-1"></i> ${formatDate(order.date)}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      orderList.innerHTML = html;
+      attachEventListeners();
+    }
+
+    // Function to go to previous page
+    function goToPreviousPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderCurrentPage();
+        updatePagination();
+        scrollToTop();
+      }
+    }
+
+    // Function to go to next page
+    function goToNextPage() {
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderCurrentPage();
+        updatePagination();
+        scrollToTop();
+      }
+    }
+
+    // Function to update pagination info and buttons
+    function updatePagination() {
+      const startOrder = (currentPage - 1) * ORDERS_PER_PAGE + 1;
+      const endOrder = Math.min(currentPage * ORDERS_PER_PAGE, allOrders.length);
+      
+      pageInfo.innerHTML = `
+        Page ${currentPage} of ${totalPages}<br>
+        <small class="text-muted">Showing orders ${startOrder}-${endOrder} of ${allOrders.length}</small>
+      `;
+      
+      // Update button states
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+      
+      // Show pagination if there are multiple pages
+      paginationContainer.style.display = totalPages > 1 ? 'flex' : 'none';
+    }
+
+    // Function to scroll to top
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Function to view order details
+    function viewOrderDetails(orderId) {
+      window.location.href = `view.html?orderId=${orderId}`;
+    }
+
+    // Function to attach event listeners to buttons
+    function attachEventListeners() {
+      // Delete buttons
+      document.querySelectorAll(".btn-delete").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const index = parseInt(e.target.closest("button").dataset.index);
+          orderToDelete = allOrders[index];
+          document.getElementById("deleteReason").value = "";
+          deleteModal.show();
+        });
+      });
+
+      // Edit buttons
+      document.querySelectorAll(".btn-edit").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const index = parseInt(e.target.closest("button").dataset.index);
+          orderToEdit = allOrders[index];
+          document.getElementById("editOrderId").value = orderToEdit.id;
+          document.getElementById("editConsigner").value = orderToEdit.consigner || '';
+          document.getElementById("editDate").value = formatDateForInput(orderToEdit.date);
+          editModal.show();
+        });
+      });
+    }
+
+    // Function to get status class
+    function getStatusClass(status) {
+      if (!status) return "badge bg-secondary";
+      
+      switch (status.toLowerCase()) {
+        case "in transit":
+        case "in-transit":
+          return "badge bg-info";
+        case "delivered":
+          return "badge bg-success";
+        case "pending":
+          return "badge bg-warning text-dark";
+        case "processing":
+          return "badge bg-primary";
+        default:
+          return "badge bg-secondary";
+      }
+    }
+
+    // Function to format date
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      } catch (e) {
+        return dateString;
+      }
+    }
+
+    // Function to format date for input field
+    function formatDateForInput(dateString) {
+      if (!dateString) return '';
+      
+      try {
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+      } catch (e) {
+        return '';
+      }
+    }
+
+    // Function to show/hide loading spinner
+    function showLoading(show) {
+      isLoading = show;
+      loadingSpinner.style.display = show ? 'block' : 'none';
+      prevBtn.disabled = show;
+      nextBtn.disabled = show;
+    }
+
+    // Function to show no orders message
+    function showNoOrdersMessage() {
+      noOrdersMessage.style.display = 'block';
+      paginationContainer.style.display = 'none';
+      orderList.innerHTML = '';
+    }
+
+    // ✅ Confirm delete
+    document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+      const reason = document.getElementById("deleteReason").value.trim();
+      if (!reason) return alert("Please provide a reason.");
+
+      try {
+        // In real implementation, send delete request to backend
+        // await fetch('delete_order.php', { method: 'POST', body: JSON.stringify({ orderId: orderToDelete.id, reason }) });
+        
+        // For demo, remove from local array
+        allOrders = allOrders.filter(order => order.id !== orderToDelete.id);
+        totalPages = Math.ceil(allOrders.length / ORDERS_PER_PAGE);
+        
+        // Adjust current page if needed
+        if (currentPage > totalPages && totalPages > 0) {
+          currentPage = totalPages;
+        }
+        
+        if (allOrders.length === 0) {
+          showNoOrdersMessage();
+        } else {
+          renderCurrentPage();
+          updatePagination();
+        }
+        
+        deleteModal.hide();
+        alert("Order deleted successfully.");
+      } catch (error) {
+        console.error('Error deleting order:', error);
+        alert('Error deleting order: ' + error.message);
+      }
+    });
+
+    // ✅ Save edit
+    document.getElementById("saveEditBtn").addEventListener("click", async () => {
+      const newId = document.getElementById("editOrderId").value.trim();
+      const newConsigner = document.getElementById("editConsigner").value.trim();
+      const newDate = document.getElementById("editDate").value;
+
+      if (!newId || !newConsigner || !newDate) {
+        return alert("All fields required.");
+      }
+
+      try {
+        // In real implementation, send update request to backend
+        // await fetch('update_order.php', { method: 'POST', body: JSON.stringify({ orderId: orderToEdit.id, updates: { id: newId, consigner: newConsigner, date: newDate } }) });
+        
+        // For demo, update local array
+        const orderIndex = allOrders.findIndex(order => order.id === orderToEdit.id);
+        if (orderIndex !== -1) {
+          allOrders[orderIndex] = {
+            ...allOrders[orderIndex],
+            id: newId,
+            consigner: newConsigner,
+            date: newDate
+          };
+        }
+        
+        renderCurrentPage();
+        editModal.hide();
+        alert("Order updated successfully.");
+      } catch (error) {
+        console.error('Error updating order:', error);
+        alert('Error updating order: ' + error.message);
+      }
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft' && currentPage > 1) {
+        goToPreviousPage();
+      } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
+        goToNextPage();
+      }
+    });
+  </script>
+</body>
+</html>

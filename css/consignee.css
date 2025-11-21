@@ -1,0 +1,67 @@
+body {
+      background: #f8f9fa;
+    }
+
+    .header {
+      background-color: #ffc107;
+      padding: 12px 16px;
+      font-weight: bold;
+      color: #212529;
+      display: flex;
+      align-items: center;
+    }
+
+    .header i {
+      cursor: pointer;
+    }
+
+    .error-message {
+      display: none;
+      color: red;
+      font-size: 0.9rem;
+    }
+
+    .invalid-input {
+      border-color: red !important;
+    }
+
+    .payment-box {
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .payment-box:hover {
+      border-color: #ffc107;
+      background-color: #fff8e1;
+    }
+
+    .payment-box.active {
+      border-color: #ffc107;
+      background-color: #ffeeba;
+      box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+    }
+     .error-message {
+      color: red;
+      display: none;
+      font-size: 14px;
+    }
+
+    .invalid-input {
+      border-color: red !important;
+    }
+
+    .payment-box {
+      border: 2px solid #ccc;
+      padding: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .payment-box.active {
+      border-color: #ffc107;
+      background: #fff8e1;
+    }
+  

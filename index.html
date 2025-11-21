@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
+    <link href="css/index.css" rel="stylesheet"/>
+
+</head>
+<body>
+
+<div class="container mt-4 mb-5">
+
+    <h3 class="fw-bold mb-3">Dashboard</h3>
+
+    <!-- Welcome Card -->
+    <div class="welcome-card mb-4">
+        Welcome 
+    </div>
+
+    <!-- Today's Overview -->
+    <h5 class="fw-bold mb-3">Today's Overview</h5>
+
+    <div class="row g-3 mb-4">
+        <div class="col-4">
+            <div class="overview-card">
+               <i class="fa-solid fa-cart-shopping"></i>
+                <h4 class="fw-bold">24</h4>
+                <p class="text-muted small m-0">Total</p>
+            </div>
+        </div>
+
+        <div class="col-4">
+            <div class="overview-card">
+                <i class="fa-solid fa-truck-fast"></i>
+                <h4 class="fw-bold">8</h4>
+                <p class="text-muted small m-0">Pending</p>
+            </div>
+        </div>
+
+        <div class="col-4">
+            <div class="overview-card">
+                <i class="fa-regular fa-circle-check" style="color: #000000;"></i>
+                <h4 class="fw-bold">16</h4>
+                <p class="text-muted small m-0">Completed</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <h5 class="fw-bold mb-3">Quick Actions</h5>
+
+    <div class="row g-3">
+        <div class="col-6">
+            <div class="action-card" onclick="goToNewOrder()" style="cursor:pointer;">
+                <i class="fa-solid fa-cart-plus"></i>
+                <p class="fw-semibold mt-2">New Order</p>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div class="action-card" onclick="goToViewOrder()" style="cursor:pointer;">
+                <i class="fa-solid fa-list"></i>
+                <p class="fw-semibold mt-2">View Orders</p>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div class="action-card" onclick="goToPickup()" style="cursor:pointer;">
+                <i class="fa-solid fa-box-open"></i>
+                <p class="fw-semibold mt-2">Pickup Details</p>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div class="action-card" onclick="goToDeliveryStatus()" style="cursor:pointer;">
+              <i class="fa-solid fa-truck-ramp-box"></i>
+                <p class="fw-semibold mt-2">Delivery Status</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+    <a href="index.html" class="active"><br>
+       <i class="fa-solid fa-house" style="color: #ff9500;"></i><br>Home
+    </a>
+    <a href="view_order.html"><br>
+        <i class="fa-solid fa-list" style="color: #ffa200;"></i><br>Orders
+    </a>
+    <a href="pickup_details.html"> <br>
+      <i class="fa-solid fa-box-open" style="color: #ffa200;"></i><br>Pickups
+    </a>
+    <a href="account.html"><br>
+        <i class="fa-solid fa-user-ninja" style="color: #ff9500;"></i><br>Account
+    </a>
+</div>
+
+<script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
+
+<script>
+    
+    function goToNewOrder() {
+        window.location.href = "new_order.html";
+    }
+    function goToViewOrder() {
+        window.location.href = "view_order.html";
+    }
+    function goToDeliveryStatus() {
+        window.location.href = "delivery_status.html";
+    }
+    function goToPickup() {
+        window.location.href = "pickup_details.html";
+    }
+</script>
+
+</body>
+</html>

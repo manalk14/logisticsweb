@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Update Delivery Status</title>
+
+<link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
+<link rel="stylesheet" href="css/edit_delivery.css" />
+
+</head>
+<body>
+
+<div class="container-fluid ">
+
+  <!-- HEADER -->
+  <header class="app-header mb-3">
+    <div class="container d-flex align-items-center">
+      <i class="fas fa-arrow-left fa-lg me-3" id="backButton" style="cursor:pointer;"></i>
+      <h5 class="mb-0 fw-bold">Update Delivery Status</h5>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="content-card">
+      <form id="deliveryForm" novalidate>
+        <!-- Order Selection -->
+        <div class="input-group">
+          <i class="fas fa-list-alt"></i>
+          <select class="form-select custom-input" id="orderSelect" required>
+            <option value="" disabled>Select an order</option>
+            <option value="ORD00123">ORD00123</option>
+            <option value="ORD00124">ORD00124</option>
+            <option value="ORD00125">ORD00125</option>
+            <option value="ORD00126">ORD00126</option>
+            <option value="ORD00127">ORD00127</option>
+            <option value="ORD00128">ORD00128</option>
+          </select>
+          <div class="error-msg" id="error-orderSelect"></div>
+        </div>
+
+        <!-- Delivery Status -->
+        <label class="mb-2 fw-semibold">Delivery Status</label>
+        <div class="status-options mb-3">
+          <div class="status-option selected" data-status="delivered">
+           <i class="fa-solid fa-circle-check" style="color: #00ff11;"></i>
+            <div>Delivery Completed</div>
+          </div>
+          <div class="status-option" data-status="cancelled">
+          <i class="fa-solid fa-circle-xmark" style="color: #e02929;"></i>
+            <div>Delivery Cancelled</div>
+          </div>
+        </div>
+        <input type="hidden" id="deliveryStatus" name="deliveryStatus" value="delivered" required>
+
+        <!-- Delivery Notes -->
+        <div class="input-group">
+          <i class="fas fa-sticky-note"></i>
+          <textarea class="form-control custom-input" id="deliveryNotes" placeholder="Delivery Notes" rows="3"></textarea>
+          <div class="error-msg" id="error-deliveryNotes"></div>
+        </div>
+
+        <!-- Image Upload -->
+        <label class="fw-semibold mb-2">Capture Proof Image</label>
+        <div class="image-upload" id="imageUpload">
+          <i class="fas fa-camera fa-2x mb-2"></i>
+          <p>Previous image exists</p>
+          <p class="text-muted">Tap to capture new image</p>
+        </div>
+        <div class="existing-image text-center">
+          <img src="" alt="Delivery proof image">
+        </div>
+        <input type="file" id="imageInput" accept="image/*" style="display:none;">
+      </form>
+    </div>
+  </main>
+
+  <!-- FIXED FOOTER -->
+  <footer class="fixed-footer">
+    <div class="container">
+      <div class="row gx-3">
+        <div class="d-flex justify-content-center">
+  <button id="saveButton" class="btn btn-lg mt-3">Save</button>
+</div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
+<script>
+document.getElementById('backButton').addEventListener('click', function() {
+    window.location.href = 'delivery_status.html';
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const statusOptions = document.querySelectorAll('.status-option');
+  const statusInput = document.getElementById('deliveryStatus');
+  const imageUpload = document.getElementById('imageUpload');
+  const imageInput = document.getElementById('imageInput');
+  const orderSelect = document.getElementById('orderSelect');
+
+  // Status selection
+  statusOptions.forEach(option => {
+    option.addEventListener('click', function () {
+      statusOptions.forEach(opt => opt.classList.remove('selected'));
+      this.classList.add('selected');
+      statusInput.value = this.getAttribute('data-status');
+    });
+  });
+
+  // Image upload
+  imageUpload.addEventListener('click', function () {
+    imageInput.click();
+  });
+  imageInput.addEventListener('change', function () {
+    if(this.files && this.files[0]){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        document.querySelector('.existing-image img').src = e.target.result;
+      }
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+
+  // Form validation
+  function validateForm() {
+    let valid = true;
+    if(orderSelect.value === ""){
+      document.getElementById('error-orderSelect').textContent = "Select an order";
+      document.getElementById('error-orderSelect').style.display = "block";
+      valid = false;
+    } else {
+      document.getElementById('error-orderSelect').style.display = "none";
+    }
+    return valid;
+  }
+
+  document.getElementById('saveButton').addEventListener('click', () => {
+    if(validateForm()) alert("Delivery status saved successfully!");
+  });
+  document.getElementById('nextButton').addEventListener('click', () => {
+    if(validateForm()) alert("Proceeding to next step...");
+  });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delivery Status</title>
+
+  <!-- Bootstrap 5 CSS -->
+<link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
+  <link rel="stylesheet" href="css/delivery.css">   
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header mb-3">
+    <button class="icon-btn" id="backButton" type="button" title="New Order">
+      <i class="fa-sharp fa-solid fa-arrow-left" id="backbtn"></i>
+    </button>
+    <span class="fw-bold fs-5">Delivery Status</span>
+  </header>
+
+  <!-- Orders Container -->
+  <div class="container my-3" id="orderContainer">
+    <!-- Orders will be injected here -->
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Back button → navigate to new_order.html
+      const backButton = document.getElementById('backButton');
+      backButton.addEventListener('click', () => {
+        window.location.href = 'index.html';
+      });
+
+      // Sample orders
+      let orders = [
+        { id: "ORD00123", consignee: "ABC Medical Store", notes: "Delivered to front desk", date: "10/10/2025", status: "Delivered" },
+        { id: "ORD00124", consignee: "XYZ Pharmacy", notes: "Customer not available - rescheduled", date: "12/10/2025", status: "Undelivered" },
+        { id: "ORD00125", consignee: "City Medical Center", notes: "Delivered successfully to manager", date: "15/10/2025", status: "Delivered" }
+      ];
+
+      const orderContainer = document.getElementById("orderContainer");
+
+      // Render all orders
+      function renderOrders() {
+        orderContainer.innerHTML = '';
+        orders.forEach((order, index) => {
+          const card = document.createElement('div');
+          card.className = 'card mb-3 order-card';
+          card.innerHTML = `
+            <div class="order-card-body p-3">
+              <div class="order-info">
+                <div><strong>Order No:</strong> ${order.id}</div>
+                <div><strong>Consignee:</strong> ${order.consignee}</div>
+                <div class="text-muted">Notes: ${order.notes}</div>
+              </div>
+              <div class="order-actions text-end">
+                <span class="status-badge ${order.status === 'Delivered' ? 'status-delivered' : 'status-undelivered'} mb-2">${order.status}</span>
+                <div class="action-buttons mt-2">
+               <button class="btn btn-success btn-sm btn-view" type="button"><i class="fa-solid fa-eye fa-lg"></i></button>
+                  <button class="btn btn-primary btn-sm btn-edit" type="button"><i class="far fa-edit"></i></button>
+                  <button class="btn btn-danger btn-sm btn-delete" type="button"><i class="fas fa-trash-alt"></i></button>
+                </div>
+                <div class="text-muted mt-2"><i class="far fa-calendar-alt me-1"></i>${order.date}</div>
+              </div>
+            </div>
+          `;
+
+          // View
+          card.querySelector('.btn-view').addEventListener('click', () => {
+          window.location.href = 'order_edit.html';
+          });
+
+          // Edit → go to edit_delivery.html
+          card.querySelector('.btn-edit').addEventListener('click', () => {
+            window.location.href = `edit_delivery.html?orderId=${encodeURIComponent(order.id)}`;
+          });
+
+          // Delete
+          card.querySelector('.btn-delete').addEventListener('click', () => {
+            if (confirm(`Are you sure you want to delete ${order.id}?`)) {
+              orders.splice(index, 1);
+              renderOrders();
+            }
+          });
+
+          orderContainer.appendChild(card);
+        });
+      }
+
+      // 🟢 Initial render
+      renderOrders();
+    });
+
+  </script>
+  
+
+ 
+</body>
+</html>

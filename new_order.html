@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>New Order - Multi Step Tabs</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
+  <link href="css/new-order.css" rel="stylesheet">
+
+  <style>
+    .disabled-btn { opacity: 0.5; pointer-events: none; }
+    .is-invalid-field { border-color: #dc3545; }
+    .error-message { display:none; color:#dc3545; font-size:.875rem; margin-top:.25rem; }
+    .payment-box { border:1px solid #ddd; border-radius:.75rem; padding:1rem; cursor:pointer; transition:.2s; }
+    .payment-box:hover { background:#f9f9f9; }
+    .payment-box.active { border-color:#0d6efd; box-shadow:0 0 0 .2rem rgba(13,110,253,.15); background:#e7f1ff; }
+    .fixed-bottom-bar { position:sticky; bottom:0; background:#fff; border-top:1px solid #eee; padding:.75rem; }
+    .section-title { font-weight:600; }
+    .autocomplete-wrapper { position: relative; }
+    .autocomplete-items {
+      position: absolute;
+      border: 1px solid #ddd;
+      border-top: none;
+      z-index: 9999;
+      background: white;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .autocomplete-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    .autocomplete-item:hover, .autocomplete-item.active {
+      background: #f1f1f1;
+    }
+    .no-results {
+      padding: 8px 12px;
+      color: #6c757d;
+      font-style: italic;
+      text-align: center;
+    }
+    .pod-no-field.optional {
+      opacity: 0.7;
+    }
+    .pod-no-field.optional label::after {
+      content: " (Optional)";
+      color: #6c757d;
+      font-weight: normal;
+    }
+    .payment-disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+    .payment-disabled:hover {
+      background: #f9f9f9 !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+
+  <!-- Header -->
+  <header class="p-3 bg-warning fw-bold text-dark d-flex align-items-center">
+    &nbsp;&nbsp;&nbsp;<i class="fa-sharp fa-solid fa-arrow-left" id="backButton" style="cursor: pointer;"></i>
+    &nbsp;<span class="mb-0 fw-bold">New Customer Order</span>
+  </header>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mt-3 mx-3" id="orderTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab1-btn" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">Consignor</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link disabled" id="tab2-btn" type="button" role="tab">Consignee</button>
+    </li>
+  </ul>
+
+  <!-- Tab Contents -->
+  <div class="tab-content p-3">
+
+    <!-- TAB 1 — CONSIGNOR -->
+    <div class="tab-pane fade show active" id="tab1" role="tabpanel">
+      <div class="tab-card">
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-user"></i> Consignor Details</h5>
+
+        <form id="consignorForm" novalidate>
+          <div class="row">
+            <div class="col-md-6 mb-3 autocomplete-wrapper">
+              <label class="form-label">Company Name *</label>
+              <input type="text" id="companyName" class="form-control required-field autocomplete-input" autocomplete="off" />
+              <div class="error-message">Please enter company name</div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Supplier Invoice *</label>
+              <input type="text" id="supplierInvoice" class="form-control required-field" />
+              <div class="error-message">Please enter supplier invoice</div>
+            </div>
+          </div>
+          
+
+          <div class="row">
+                      <div class="col-md-6 mb-3 pod-no-field">
+              <label class="form-label">POD No *</label>
+              <input type="text" id="podNo" class="form-control required-field" />
+              <div class="error-message">Please enter POD No</div>
+            </div>
+
+            <div class="col-md-6 mb-3 autocomplete-wrapper">
+              <label class="form-label">City *</label>
+              <input type="text" id="city" class="form-control required-field autocomplete-input" autocomplete="off" />
+              <div class="error-message">Please enter city</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Address *</label>
+            <textarea id="address" class="form-control required-field" rows="2"></textarea>
+            <div class="error-message">Please enter address</div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone *</label>
+              <input type="tel" id="phone" class="form-control required-field" pattern="[0-9]{10}" />
+              <div class="error-message">Enter 10-digit phone</div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB 2 — CONSIGNEE -->
+    <div class="tab-pane fade" id="tab2" role="tabpanel">
+      <div class="tab-card">
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-user"></i> Consignee Details</h5>
+
+        <form id="consigneeForm" novalidate>
+          <div class="row">
+            <div class="col-md-6 mb-3 autocomplete-wrapper">
+              <label class="form-label">Consignee Name *</label>
+              <input type="text" id="cName" class="form-control required-field2 autocomplete-input" autocomplete="off" />
+              <div class="error-message">Required</div>
+            </div>
+            <div class="col-md-6 mb-3 autocomplete-wrapper">
+              <label class="form-label">City *</label>
+              <input type="text" id="cCity" class="form-control required-field2 autocomplete-input" autocomplete="off" />
+              <div class="error-message">Required</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Route *</label>
+              <input type="text" id="cRoute" class="form-control required-field2" placeholder="Select city first to load routes" />
+              <div class="error-message">Required</div>
+            </div>
+            <div class="col-md-6 mb-3">
+             <label class="form-label">Phone *</label>
+            <input type="tel" id="cPhone" class="form-control required-field2" pattern="[0-9]{10}" />
+            <div class="error-message">Enter 10-digit phone</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Address *</label>
+            <textarea id="cAddress" class="form-control required-field2" rows="2"></textarea>
+            <div class="error-message">Required</div>
+          </div>
+
+        <div class="card mb-4">
+  <div class="card-header bg-light fw-bold"><i class="fa-solid fa-credit-card"></i> Payment Type</div>
+  <div class="card-body text-center">
+    <div class="row g-3">
+      <div class="col-4 d-flex">
+        <div class="payment-box w-100 d-flex flex-column align-items-center justify-content-center" id="noneBox" onclick="selectPayment('none')">
+          <i class="fa-solid fa-ban fa-2x mb-2"></i>
+          <div>None</div>
+        </div>
+      </div>
+      <div class="col-4 d-flex">
+        <div class="payment-box w-100 d-flex flex-column align-items-center justify-content-center" id="toPayBox" onclick="selectPayment('toPay')">
+          <i class="fa-solid fa-money-bill-wave fa-2x mb-2"></i>
+          <div>To Pay</div>
+        </div>
+      </div>
+      <div class="col-4 d-flex">
+        <div class="payment-box w-100 d-flex flex-column align-items-center justify-content-center" id="paidOrderBox" onclick="selectPayment('paidOrder')">
+          <i class="fa-solid fa-circle-check fa-2x mb-2"></i>
+          <div>Paid Order</div>
+        </div>
+      </div>
+    </div>
+    <div class="error-message" id="paymentError">Please select a payment type.</div>
+  </div>
+</div>
+
+          <!-- BOX AND COVER -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="section-title mb-3"><i class="fa-solid fa-box"></i> Packaging Details</div>
+              <div class="row g-3">
+                <!-- Box -->
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="section-title p-3"><i class="fa-solid fa-cube"></i> Box</div>
+                    <div class="card-body" id="boxSection">
+                      <div class="row align-items-center mb-2" >
+                        <div class="col-4 fw-bold">Small</div>
+                        <div class="col-4"><input type="number" class="form-control box-qty" data-size="small" placeholder="Qty" min="0"></div>
+                        <div class="col-4"><input type="number" class="form-control box-price" data-size="small" placeholder="Price" min="0"></div>
+                      </div>
+                      <div class="row align-items-center mb-2">
+                        <div class="col-4 fw-bold">Medium</div>
+                        <div class="col-4"><input type="number" class="form-control box-qty" data-size="medium" placeholder="Qty" min="0"></div>
+                        <div class="col-4"><input type="number" class="form-control box-price" data-size="medium" placeholder="Price" min="0"></div>
+                      </div>
+                      <div class="row align-items-center">
+                        <div class="col-4 fw-bold">Large</div>
+                        <div class="col-4"><input type="number" class="form-control box-qty" data-size="large" placeholder="Qty" min="0"></div>
+                        <div class="col-4"><input type="number" class="form-control box-price" data-size="large" placeholder="Price" min="0"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cover -->
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="section-title p-3"><i class="fa-solid fa-envelope"></i> Cover</div>
+                    <div class="card-body" id="coverSection">
+                      <div class="row align-items-center mb-2">
+                        <div class="col-4 fw-bold">Small</div>
+                        <div class="col-4"><input type="number" class="form-control cover-qty" data-size="small" placeholder="Qty" min="0"></div>
+                        <div class="col-4"><input type="number" class="form-control cover-price" data-size="small" placeholder="Price" min="0"></div>
+                      </div>
+                      <div class="row align-items-center mb-2">
+                        <div class="col-4 fw-bold">Medium</div>
+                        <div class="col-4"><input type="number" class="form-control cover-qty" data-size="medium" placeholder="Qty" min="0"></div>
+                        <div class="col-4"><input type="number" class="form-control cover-price" data-size="medium" placeholder="Price" min="0"></div>
+                      </div>
+                      <div class="row align-items-center">
+                        <div class="col-4 fw-bold">Large</div>
+                        <div class="col-4"><input type="number" class="form-control cover-qty" data-size="large" placeholder="Qty" min="0"></div>
+                        <div class="col-4"><input type="number" class="form-control cover-price" data-size="large" placeholder="Price" min="0"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="error-message mt-3" id="boxCoverError">Please enter at least one Box AND one Cover with quantity and price.</div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer (Back left; Next+Save right) -->
+  <div class="fixed-bottom-bar d-flex justify-content-center align-items-center px-3">
+    <!-- Back (hidden on tab1) -->
+    <button class="btn btn-secondary d-none" id="backTab">Back</button>
+
+    <!-- Right side -->
+    <div class="footer-right ms-auto">
+      <button class="btn btn-warning" id="nextTab">Next</button>
+      <button class="btn btn-success d-none" id="saveAll">Save</button>
+    </div>
+  </div>
+
+<!-- Scripts -->
+<script src="../jquery-3.6.0.min.js"></script>
+<script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+/* -------------------------
+   State
+-------------------------*/
+let consignees = [];
+let selectedPayment = null;
+let isConsignerFromDropdown = false;
+
+// API Configuration
+const BASE_URL = "https://www.loginlogistics.in/main/driverapp/";
+const API_ENDPOINTS = {
+  city: "get_city.php",
+  consignee: "get_consignee.php",
+  route: "get_routes.php",
+  consigner: "get_consigner.php"
+};
+
+/* DOM */
+const tab1Btn = document.getElementById('tab1-btn');
+const tab2Btn = document.getElementById('tab2-btn');
+const nextBtn = document.getElementById('nextTab');
+const backBtn = document.getElementById('backTab');
+const saveBtn = document.getElementById('saveAll');
+
+/* Header back */
+document.getElementById('backButton').addEventListener('click', () => {
+  window.location.href = 'index.html';
+});
+
+/* -------------------------
+   Autocomplete Functionality with Keyboard Navigation
+-------------------------*/
+function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, onSelectCallback = null) {
+  const input = document.getElementById(inputId);
+  const wrapper = input.parentElement;
+  let currentList;
+  let currentFocus = -1;
+
+  function removeCurrentList() {
+    if (currentList) {
+      currentList.remove();
+      currentList = null;
+      currentFocus = -1;
+    }
+  }
+
+  function setActive(items, direction) {
+    if (!items) return;
+    
+    removeActive(items);
+    
+    if (direction === 'down') {
+      currentFocus++;
+      if (currentFocus >= items.length) currentFocus = 0;
+    } else if (direction === 'up') {
+      currentFocus--;
+      if (currentFocus < 0) currentFocus = items.length - 1;
+    }
+    
+    if (currentFocus >= 0 && currentFocus < items.length) {
+      items[currentFocus].classList.add('active');
+      items[currentFocus].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function removeActive(items) {
+    items.forEach(item => item.classList.remove('active'));
+  }
+
+  function selectActiveItem(items) {
+    if (currentFocus > -1 && items && items[currentFocus]) {
+      items[currentFocus].click();
+    }
+  }
+
+  input.addEventListener("input", function () {
+    const val = this.value.trim().toLowerCase();
+    removeCurrentList();
+    
+    // Reset consigner flag when user types manually or clears the field
+    if (inputId === "companyName") {
+      // Check if the value matches the selected ID (meaning it was manually changed)
+      if (!this.dataset.selectedId || this.value !== this.dataset.originalValue) {
+        isConsignerFromDropdown = false;
+        updatePodNoField();
+        updatePaymentOptions();
+      }
+    }
+    
+    if (!val) {
+      if (inputId === "companyName") {
+        isConsignerFromDropdown = false;
+        updatePodNoField();
+        updatePaymentOptions();
+      }
+      return;
+    }
+
+    const body = {
+      app_id: localStorage.getItem("app_id") || "Mzk-",
+      search: val,
+      term: val
+    };
+
+    fetch(BASE_URL + endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    })
+    .then(r => {
+      return r.json();
+    })
+    .then(data => {
+      let arr = data[listKey] || [];
+      currentList = document.createElement("div");
+      currentList.className = "autocomplete-items";
+      wrapper.appendChild(currentList);
+
+      if (arr.length === 0) {
+        const noResults = document.createElement("div");
+        noResults.className = "no-results";
+        noResults.textContent = "No results found";
+        currentList.appendChild(noResults);
+        return;
+      }
+
+      arr.forEach(item => {
+        const text = item[displayKey] || "";
+        const id = item[valueKey] || "";
+
+        if (text.toLowerCase().includes(val)) {
+          const div = document.createElement("div");
+          div.className = "autocomplete-item";
+          div.textContent = text;
+
+          div.onclick = () => {
+            input.value = text;
+            input.dataset.selectedId = id;
+            input.dataset.originalValue = text; // Store original value
+
+            // Set consigner flag when selected from dropdown
+            if (inputId === "companyName") {
+              isConsignerFromDropdown = true;
+              updatePodNoField();
+              updatePaymentOptions();
+            }
+
+            if (item.destination) input.dataset.destination = item.destination;
+            if (item.destinationid) input.dataset.destinationid = item.destinationid;
+            if (item.dst_address) input.dataset.dst_address = item.dst_address;
+            if (item.dst_phone_number) input.dataset.dst_phone_number = item.dst_phone_number;
+
+            if (onSelectCallback && typeof onSelectCallback === 'function') {
+              onSelectCallback(item);
+            }
+
+            removeCurrentList();
+          };
+
+          currentList.appendChild(div);
+        }
+      });
+    })
+    .catch(err => {
+      console.error('Error fetching data:', err);
+    });
+  });
+
+  // Keyboard navigation
+  input.addEventListener("keydown", function(e) {
+    const items = currentList ? currentList.querySelectorAll('.autocomplete-item') : null;
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (items && items.length > 0) {
+        setActive(items, 'down');
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (items && items.length > 0) {
+        setActive(items, 'up');
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (items && items.length > 0) {
+        selectActiveItem(items);
+      }
+    } else if (e.key === 'Escape') {
+      removeCurrentList();
+    }
+  });
+
+  // Close dropdown when input loses focus
+  input.addEventListener("blur", function() {
+    setTimeout(removeCurrentList, 150);
+  });
+
+  // Add event listener for manual clearing
+  input.addEventListener('change', function() {
+    if (inputId === "companyName") {
+      // If user manually changes the value, treat as manual entry
+      if (this.dataset.selectedId && this.value !== this.dataset.originalValue) {
+        isConsignerFromDropdown = false;
+        delete this.dataset.selectedId;
+        delete this.dataset.originalValue;
+        updatePodNoField();
+        updatePaymentOptions();
+      }
+    }
+  });
+}
+
+// Function to update POD No field validation
+function updatePodNoField() {
+  const podNoField = document.querySelector('.pod-no-field');
+  const podNoInput = document.getElementById('podNo');
+  
+  if (isConsignerFromDropdown) {
+    // Keep field visible but make it optional
+    podNoField.classList.remove('hidden');
+    podNoField.classList.add('optional');
+    podNoInput.classList.remove('required-field');
+    podNoInput.placeholder = "Optional when consigner selected from list";
+    showFieldError(podNoInput, false); // Remove any error
+  } else {
+    // Manual entry - field is required
+    podNoField.classList.remove('hidden', 'optional');
+    podNoInput.classList.add('required-field');
+    podNoInput.placeholder = "";
+    podNoInput.placeholder = "Enter POD No";
+  }
+}
+
+// Function to update payment options based on consigner selection
+function updatePaymentOptions() {
+  const nonePaymentBox = document.getElementById('noneBox');
+  
+  if (isConsignerFromDropdown) {
+    // Enable "None" payment
+    nonePaymentBox.classList.remove('payment-disabled');
+    nonePaymentBox.style.cursor = 'pointer';
+    nonePaymentBox.title = '';
+  } else {
+    // Disable "None" payment
+    nonePaymentBox.classList.add('payment-disabled');
+    nonePaymentBox.style.cursor = 'not-allowed';
+    nonePaymentBox.title = 'None payment only available when consigner is selected from dropdown';
+    
+    // Deselect "none" if it was selected
+    if (selectedPayment === 'none') {
+      selectedPayment = null;
+      nonePaymentBox.classList.remove('active');
+      document.getElementById('paymentError').style.display = 'block';
+      checkBoxCoverCompletion();
+    }
+  }
+}
+
+// Function to auto-fill city and address when consigner is selected
+function onConsignerSelect(selectedItem) {
+  const cityInput = document.getElementById('city');
+  const addressInput = document.getElementById('address');
+  
+  if (selectedItem.startsfrom && cityInput) {
+    cityInput.value = selectedItem.startsfrom;
+    cityInput.dataset.selectedId = selectedItem.stcompanyid || '';
+    showFieldError(cityInput, false);
+  }
+  
+  if (selectedItem.address && addressInput) {
+    addressInput.value = selectedItem.address;
+    showFieldError(addressInput, false);
+  }
+}
+
+// Function to auto-fill city and route when consignee is selected
+function onConsigneeSelect(selectedItem) {
+  const cityInput = document.getElementById('cCity');
+  const routeInput = document.getElementById('cRoute');
+  const addressInput = document.getElementById('cAddress');
+  const phoneInput = document.getElementById('cPhone');
+  
+  if (selectedItem.destination && cityInput) {
+    cityInput.value = selectedItem.destination;
+    cityInput.dataset.destinationid = selectedItem.destinationid || '';
+    showFieldError(cityInput, false);
+    
+    if (selectedItem.destinationid) {
+      convertDestinationIdToCityId(selectedItem.destinationid, selectedItem.destination);
+    }
+  }
+  
+  if (selectedItem.dst_address && addressInput) {
+    addressInput.value = selectedItem.dst_address;
+    showFieldError(addressInput, false);
+  }
+  
+  if (selectedItem.dst_phone_number && phoneInput) {
+    phoneInput.value = selectedItem.dst_phone_number;
+    showFieldError(phoneInput, false);
+  }
+}
+
+// Function to convert destinationid to cityid by searching in city API
+function convertDestinationIdToCityId(destinationId, destinationName) {
+  const body = {
+    app_id: localStorage.getItem("app_id") || "Mzk-",
+    search: destinationName,
+    term: destinationName
+  };
+
+  fetch(BASE_URL + API_ENDPOINTS.city, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  })
+  .then(r => {
+    return r.json();
+  })
+  .then(data => {
+    let cities = data.citydet || [];
+    
+    const matchingCity = cities.find(city => 
+      city.city_name && city.city_name.toLowerCase() === destinationName.toLowerCase()
+    );
+    
+    if (matchingCity && matchingCity.cityid) {
+      const cityInput = document.getElementById('cCity');
+      cityInput.dataset.cityId = matchingCity.cityid;
+      loadRoutesForConsigneeCity(matchingCity.cityid);
+    } else {
+      const cityById = cities.find(city => city.cityid === destinationId);
+      if (cityById && cityById.cityid) {
+        const cityInput = document.getElementById('cCity');
+        cityInput.dataset.cityId = cityById.cityid;
+        loadRoutesForConsigneeCity(cityById.cityid);
+      } else {
+        allowManualRouteInput();
+      }
+    }
+  })
+  .catch(err => {
+    console.error("Error converting destinationid to cityid:", err);
+    allowManualRouteInput();
+  });
+}
+
+// Function to load routes for consignee city
+function loadRoutesForConsigneeCity(cityId) {
+  const routeInput = document.getElementById('cRoute');
+
+  if (!cityId) {
+    allowManualRouteInput();
+    return;
+  }
+
+  const body = {
+    app_id: localStorage.getItem("app_id") || "Mzk-",
+    cityid: cityId
+  };
+
+  fetch(BASE_URL + API_ENDPOINTS.route, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  })
+  .then(r => {
+    return r.json();
+  })
+  .then(data => {
+    if (data.result !== "1") {
+      allowManualRouteInput();
+      return;
+    }
+
+    let list = data.routedet || [];
+    if (list.length === 0) {
+      allowManualRouteInput();
+      return;
+    }
+    
+    if (list.length === 1) {
+      const route = list[0];
+      routeInput.value = route.rt_name;
+      routeInput.dataset.selectedId = route.rtid;
+      routeInput.placeholder = "Route";
+      showFieldError(routeInput, false);
+    } else if (list.length > 1) {
+      showRouteDropdown(list, routeInput);
+    }
+  })
+  .catch(err => {
+    allowManualRouteInput();
+  });
+}
+
+// Function to allow manual input in route field
+function allowManualRouteInput() {
+  const routeInput = document.getElementById('cRoute');
+  routeInput.value = "";
+  routeInput.placeholder = "No routes found - Enter route manually";
+  routeInput.dataset.selectedId = "";
+}
+
+// Function to show route dropdown
+function showRouteDropdown(routes, routeInput) {
+  const wrapper = routeInput.parentElement;
+  
+  const existingDropdown = wrapper.querySelector('.autocomplete-items');
+  if (existingDropdown) {
+    existingDropdown.remove();
+  }
+  
+  let dropdown = document.createElement("div");
+  dropdown.className = "autocomplete-items";
+  wrapper.appendChild(dropdown);
+
+  let currentFocus = -1;
+
+  routes.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className = "autocomplete-item";
+    div.textContent = item.rt_name;
+
+    div.onclick = () => {
+      routeInput.value = item.rt_name;
+      routeInput.dataset.selectedId = item.rtid;
+      routeInput.placeholder = "Route";
+      dropdown.remove();
+      showFieldError(routeInput, false);
+    };
+
+    dropdown.appendChild(div);
+  });
+
+  // Keyboard navigation for route dropdown
+  routeInput.addEventListener("keydown", function(e) {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (items && items.length > 0) {
+        currentFocus++;
+        if (currentFocus >= items.length) currentFocus = 0;
+        setActiveDropdownItem(items, currentFocus);
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (items && items.length > 0) {
+        currentFocus--;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        setActiveDropdownItem(items, currentFocus);
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (items && items.length > 0 && currentFocus > -1) {
+        items[currentFocus].click();
+      }
+    } else if (e.key === 'Escape') {
+      dropdown.remove();
+    }
+  });
+
+  function setActiveDropdownItem(items, index) {
+    items.forEach(item => item.classList.remove('active'));
+    if (index >= 0 && index < items.length) {
+      items[index].classList.add('active');
+      items[index].scrollIntoView({ block: 'nearest' });
+    }
+  }
+}
+
+function initAutocomplete() {
+  createAutocomplete(
+    "companyName",
+    API_ENDPOINTS.consigner,
+    "consignordet",
+    "company_name",
+    "stcompanyid",
+    onConsignerSelect
+  );
+
+  createAutocomplete(
+    "city",
+    API_ENDPOINTS.city,
+    "citydet",
+    "city_name",
+    "cityid"
+  );
+
+  createAutocomplete(
+    "cName",
+    API_ENDPOINTS.consignee,
+    "consigneedet",
+    "dst_company_name",
+    "dstcompanyid",
+    onConsigneeSelect
+  );
+
+  createAutocomplete(
+    "cCity",
+    API_ENDPOINTS.city,
+    "citydet",
+    "city_name",
+    "cityid"
+  );
+}
+
+/* -------------------------
+   Existing Functions
+-------------------------*/
+function showFieldError(field, show=true) {
+  const err = field && field.nextElementSibling;
+  if (show) {
+    field.classList.add('is-invalid-field');
+    if (err) err.style.display = 'block';
+  } else {
+    field.classList.remove('is-invalid-field');
+    if (err) err.style.display = 'none';
+  }
+}
+
+document.addEventListener("keydown", function (e) {
+  if (e.target.type === "number") {
+    if (["e", "E", "+", "-"].includes(e.key)) {
+      e.preventDefault();
+    }
+  }
+});
+
+function validateFields(selector) {
+  let allValid = true;
+  document.querySelectorAll(selector).forEach(field => {
+    // Skip validation for POD No when consigner is from dropdown
+    if (field.id === 'podNo' && isConsignerFromDropdown) {
+      showFieldError(field, false);
+      return;
+    }
+    
+    const value = (field.value || '').trim();
+
+    if (field.type === 'tel' && field.pattern) {
+      const reg = new RegExp(`^${field.pattern}$`);
+      if (!reg.test(value)) { showFieldError(field, true); allValid = false; return; }
+      showFieldError(field, false);
+      return;
+    }
+
+    if (!value) { showFieldError(field, true); allValid = false; return; }
+    showFieldError(field, false);
+  });
+  return allValid;
+}
+
+// Function to collect box data
+function collectBoxData() {
+  const boxData = {
+    small: { qty: 0, price: 0 },
+    medium: { qty: 0, price: 0 },
+    large: { qty: 0, price: 0 }
+  };
+
+  // Collect box quantities
+  document.querySelectorAll('.box-qty').forEach(input => {
+    const size = input.dataset.size;
+    const value = parseInt(input.value) || 0;
+    if (value > 0) {
+      boxData[size].qty = value;
+    }
+  });
+
+  // Collect box prices
+  document.querySelectorAll('.box-price').forEach(input => {
+    const size = input.dataset.size;
+    const value = parseFloat(input.value) || 0;
+    if (value > 0) {
+      boxData[size].price = value;
+    }
+  });
+
+  return boxData;
+}
+
+// Function to collect cover data
+function collectCoverData() {
+  const coverData = {
+    small: { qty: 0, price: 0 },
+    medium: { qty: 0, price: 0 },
+    large: { qty: 0, price: 0 }
+  };
+
+  // Collect cover quantities
+  document.querySelectorAll('.cover-qty').forEach(input => {
+    const size = input.dataset.size;
+    const value = parseInt(input.value) || 0;
+    if (value > 0) {
+      coverData[size].qty = value;
+    }
+  });
+
+  // Collect cover prices
+  document.querySelectorAll('.cover-price').forEach(input => {
+    const size = input.dataset.size;
+    const value = parseFloat(input.value) || 0;
+    if (value > 0) {
+      coverData[size].price = value;
+    }
+  });
+
+  return coverData;
+}
+
+// Add this function to close all autocomplete dropdowns when clicking outside
+function closeAllAutocompleteDropdowns(event) {
+  const autocompleteItems = document.querySelectorAll('.autocomplete-items');
+  const autocompleteInputs = document.querySelectorAll('.autocomplete-input');
+  
+  let clickedInsideAutocomplete = false;
+  
+  autocompleteItems.forEach(dropdown => {
+    if (dropdown.contains(event.target)) {
+      clickedInsideAutocomplete = true;
+    }
+  });
+  
+  autocompleteInputs.forEach(input => {
+    if (input.contains(event.target) || input === event.target) {
+      clickedInsideAutocomplete = true;
+    }
+  });
+  
+  if (!clickedInsideAutocomplete) {
+    autocompleteItems.forEach(dropdown => {
+      dropdown.remove();
+    });
+  }
+}
+
+// Add click event listener to document
+document.addEventListener('click', closeAllAutocompleteDropdowns);
+
+/* Payment select */
+function selectPayment(type) {
+  // Check if trying to select "none" when consigner is manual
+  if (type === 'none' && !isConsignerFromDropdown) {
+    alert("None payment type is only available when consigner is selected from dropdown");
+    return;
+  }
+  
+  document.querySelectorAll('.payment-box').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(type + 'Box');
+  if (btn) btn.classList.add('active');
+  selectedPayment = type;
+  document.getElementById('paymentError').style.display = 'none';
+
+  const firstBoxQty = document.querySelector('.box-qty');
+  if (firstBoxQty) firstBoxQty.focus();
+
+  checkBoxCoverCompletion();
+}
+window.selectPayment = selectPayment;
+
+/* Enable/disable buttons on CONSIGNEE tab only */
+function setConsigneeButtonsEnabled(enabled) {
+  const nc = document.getElementById('nextConsignee');
+  if (nc) nc.classList.toggle('disabled-btn', !enabled);
+  saveBtn.classList.toggle('disabled-btn', !enabled);
+
+  if (nc) nc.disabled = !enabled;
+  saveBtn.disabled = !enabled;
+}
+
+/* Box/Cover completeness check - UPDATED FOR "NONE" PAYMENT */
+function checkBoxCoverCompletion() {
+  let boxValid = false, coverValid = false;
+
+  // If payment is "none", boxes and covers are not required
+  if (selectedPayment === 'none') {
+    document.getElementById('boxCoverError').style.display = 'none';
+    setConsigneeButtonsEnabled(true);
+    return;
+  }
+
+  const boxQty = document.querySelectorAll('.box-qty');
+  const boxPrice = document.querySelectorAll('.box-price');
+  boxQty.forEach((b, i) => {
+    const p = boxPrice[i];
+    if (Number(b.value) > 0 && p && Number(p.value) > 0) boxValid = true;
+  });
+
+  const coverQty = document.querySelectorAll('.cover-qty');
+  const coverPrice = document.querySelectorAll('.cover-price');
+  coverQty.forEach((c, i) => {
+    const p = coverPrice[i];
+    if (Number(c.value) > 0 && p && Number(p.value) > 0) coverValid = true;
+  });
+
+  const onConsigneeTab = document.getElementById('tab2').classList.contains('active');
+  const error = document.getElementById('boxCoverError');
+
+  if (onConsigneeTab) {
+    if (boxValid && coverValid) {
+      error.style.display = 'none';
+      setConsigneeButtonsEnabled(true);
+    } else {
+      error.style.display = 'block';
+      setConsigneeButtonsEnabled(false);
+    }
+  }
+}
+
+// Input listeners for box/cover fields
+document.addEventListener('input', e => {
+  if (
+    e.target.classList.contains('box-qty') ||
+    e.target.classList.contains('box-price') ||
+    e.target.classList.contains('cover-qty') ||
+    e.target.classList.contains('cover-price')
+  ) {
+    checkBoxCoverCompletion();
+  }
+
+  if (e.target.classList.contains("is-invalid-field")) {
+    showFieldError(e.target, false);
+  }
+});
+
+/* NEXT from tab1 -> tab2 */
+nextBtn.addEventListener('click', () => {
+  const onTab1 = document.getElementById('tab1').classList.contains('active');
+  if (onTab1) {
+    const valid = validateFields('#consignorForm .required-field');
+  
+    if (!valid) return;
+
+    tab2Btn.classList.remove('disabled');
+    tab2Btn.setAttribute('data-bs-toggle','tab');
+    tab2Btn.setAttribute('data-bs-target','#tab2');
+
+    const t = new bootstrap.Tab(tab2Btn);
+    t.show();
+
+    nextBtn.classList.add('d-none');
+    saveBtn.classList.remove('d-none');
+    backBtn.classList.remove('d-none');
+
+    if (!document.getElementById("nextConsignee")) {
+      const btn = document.createElement("button");
+      btn.className = "btn btn-warning ms-2";
+      btn.id = "nextConsignee";
+      btn.type = "button";
+      btn.textContent = "Next";
+      saveBtn.insertAdjacentElement("beforebegin", btn);
+      btn.addEventListener("click", handleNextConsignee);
+    }
+
+    setConsigneeButtonsEnabled(false);
+    checkBoxCoverCompletion();
+  }
+});
+
+/* BACK to tab1 */
+backBtn.addEventListener('click', () => {
+  const t = new bootstrap.Tab(tab1Btn);
+  t.show();
+
+  saveBtn.classList.add('d-none');
+  backBtn.classList.add('d-none');
+  nextBtn.classList.remove('d-none');
+
+  const nc = document.getElementById("nextConsignee");
+  if (nc) nc.remove();
+
+  tab2Btn.classList.add('disabled');
+  tab2Btn.removeAttribute('data-bs-toggle');
+  tab2Btn.removeAttribute('data-bs-target');
+});
+
+/* NEXT CONSIGNEE - UPDATED WITH CONSIGNOR ID CHECK */
+function handleNextConsignee() {
+  // Check if consignor has an ID (was selected from dropdown)
+  const consignorId = document.getElementById('companyName').dataset.selectedId;
+  if (!consignorId && isConsignerFromDropdown) {
+    alert("Please select a valid consignor from the dropdown");
+    document.getElementById('companyName').focus();
+    return;
+  }
+
+  if (!validateFields('#consigneeForm .required-field2')) {
+    return;
+  }
+
+  if (!selectedPayment) {
+    document.getElementById('paymentError').style.display = 'block';
+    return;
+  }
+
+  checkBoxCoverCompletion();
+  if (saveBtn.disabled) {
+    return;
+  }
+
+  // Collect packaging data
+  const boxData = collectBoxData();
+  const coverData = collectCoverData();
+
+  const data = {
+    name: cName.value,
+    city: cCity.value,
+    cityId: cCity.dataset.cityId || cCity.dataset.selectedId || '',
+    route: cRoute.value,
+    routeId: cRoute.dataset.selectedId || '',
+    address: cAddress.value,
+    phone: cPhone.value,
+    consigneeId: cName.dataset.selectedId || '',
+    paymentType: selectedPayment,
+    packaging: {
+      boxes: boxData,
+      covers: coverData
+    }
+  };
+  consignees.push(data);
+
+  document.querySelectorAll('#consigneeForm input, #consigneeForm textarea').forEach(i => {
+    if (!i.classList.contains('box-qty') &&
+        !i.classList.contains('box-price') &&
+        !i.classList.contains('cover-qty') &&
+        !i.classList.contains('cover-price')) {
+      i.value = "";
+    }
+  });
+
+  document.querySelectorAll('.box-qty, .box-price, .cover-qty, .cover-price').forEach(i => i.value = "");
+  setConsigneeButtonsEnabled(false);
+  checkBoxCoverCompletion();
+
+  alert("Consignee added. You can enter another now.");
+}
+
+/* SAVE ALL - UPDATED WITH CONSIGNOR ID CHECK */
+saveBtn.addEventListener('click', () => {
+  // Check if consignor has an ID (was selected from dropdown)
+  const consignorId = document.getElementById('companyName').dataset.selectedId;
+  if (!consignorId && isConsignerFromDropdown) {
+    alert("Please select a valid consignor from the dropdown");
+    document.getElementById('companyName').focus();
+    return;
+  }
+
+  if (!validateFields('#consigneeForm .required-field2')) {
+    return;
+  }
+  if (!selectedPayment) {
+    document.getElementById('paymentError').style.display = 'block';
+    return;
+  }
+  checkBoxCoverCompletion();
+  if (saveBtn.disabled) {
+    return;
+  }
+
+  // Collect packaging data for final consignee
+  const boxData = collectBoxData();
+  const coverData = collectCoverData();
+
+  // Include the final (currently filled) consignee too
+  const final = {
+    name: cName.value,
+    city: cCity.value,
+    cityId: cCity.dataset.cityId || cCity.dataset.selectedId || '',
+    route: cRoute.value,
+    routeId: cRoute.dataset.selectedId || '',
+    address: cAddress.value,
+    phone: cPhone.value,
+    consigneeId: cName.dataset.selectedId || '',
+    paymentType: selectedPayment,
+    packaging: {
+      boxes: boxData,
+      covers: coverData
+    }
+  };
+  consignees.push(final);
+
+  const consignor = {
+    podNo: podNo.value,
+    supplierInvoice: supplierInvoice.value,
+    companyName: companyName.value,
+    consignorId: companyName.dataset.selectedId || '',
+    city: city.value,
+    cityId: city.dataset.selectedId || '',
+    address: address.value,
+    phone: phone.value,
+  };
+
+  const finalOrder = {
+    consignor: consignor,
+    consignees: consignees,
+    app_id: localStorage.getItem("app_id"),
+    savedAt: new Date().toISOString()
+  };
+
+  // PRINT FINAL JSON IN CONSOLE
+  console.log(" FINAL ORDER JSON:", JSON.stringify(finalOrder, null, 2));
+
+  // SEND FINAL ORDER TO SERVER
+  fetch("save_order.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(finalOrder)
+  })
+  .then(r => {
+    return r.json();
+  })
+  .then(data => {
+    if (data.success) {
+      alert("Order saved successfully on server. Total consignees: " + consignees.length);
+      // Optionally reset the form or redirect
+      console.log('Order saved successfully:', data);
+    } else {
+      alert("Failed to save order: " + (data.message || 'Unknown error'));
+    }
+  })
+  .catch(err => {
+    console.error("Error saving order:", err);
+    alert("Server error, please try again later.");
+  });
+});
+
+// Add event listener for the company name field to clear POD No validation when consigner is selected
+document.getElementById('companyName').addEventListener('change', function() {
+  if (isConsignerFromDropdown) {
+    const podNoInput = document.getElementById('podNo');
+    showFieldError(podNoInput, false);
+  }
+});
+
+// Initialize autocomplete when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  initAutocomplete();
+  updatePodNoField(); // Initialize POD No field state
+  updatePaymentOptions(); // Initialize payment options
+});
+</script>
+</body>
+</html>

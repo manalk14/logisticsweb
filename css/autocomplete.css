@@ -1,0 +1,11 @@
+.autocomplete-wrapper {
+    display: inline-block;
+    position: relative;
+}
+.autocomplete-list {
+list-style: none;
+padding: unset;
+margin: unset;
+position: absolute;
+width: 100%;
+}

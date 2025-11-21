@@ -1,0 +1,106 @@
+    /* Header styling */
+    .app-header {
+      background-color:  #ffc107; /* Full orange */
+      color: #000000;
+      padding: 20px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .app-header .icon-btn {
+      width: 42px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background-color: #ffc107;
+      color: #000000;
+      border: none;
+      transition: background 0.3s;
+    }
+
+    .app-header .icon-btn:hover {
+      background-color: rgba(255, 255, 255, 0.938);
+    }
+
+    /* Cards styling */
+    .order-card {
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+
+    .order-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .order-card-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .order-info strong {
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .status-delivered {
+      background-color: #28a745;
+    }
+
+    .status-undelivered {
+      background-color: #dc3545;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    /* Floating Add Button */
+    #addOrderBtn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+
+    #addOrderBtn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Notes smaller text */
+    .text-muted {
+      font-size: 0.85rem;
+    }
+ #backbtn {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #000000;
+      background: none;
+      border: none;
+      margin-right: 10px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    #backbtn:hover {
+      color: #030303; /* Bootstrap primary blue */
+    }
