@@ -1,167 +1,400 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Order Details</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Details</title>
 
-    <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="css/view.css">
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <!-- FontAwesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
 
-    <!-- Font Awesome for Arrow Icon -->
-   <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.css" />
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding: 20px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .order-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+    .section-title {
+      color: #0d6efd;
+      border-bottom: 2px solid #0d6efd;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    .back-arrow {
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .back-arrow:hover {
+      color: #0d6efd !important;
+    }
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 300px;
+    }
+    .error-message {
+      color: #dc3545;
+      text-align: center;
+      padding: 20px;
+    }
+    .table th {
+      background-color: #f1f5fd;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background-color: white;
+        padding: 0;
+      }
+      .order-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  
-<div class="order-card">
-
-    <span class="text-primary mb-5"  style="font-weight: bold; font-size: 22px;">
-  <i class="fas fa-arrow-left me-2" style="cursor:pointer; color:black" onclick="history.back()"></i>&nbsp;
-    POD No: 21435-291025/10 Order Details
-    
-    </span>
-
-<div class="d-flex justify-content-end gap-2 mt-3">
-    <button class="btn btn-primary" onclick="window.print()">Print</button>
-</div>
-
-
-    <!-- ✅ Your Existing Content Below -->
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Warehouse</div>
-        <div class="col-md-8">LOG-IN LOGISTICS</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consignor</div>
-        <div class="col-md-8">Ek a/y</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consignor Phone </div>
-        <div class="col-md-8">676767788</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consignor Inv no </div>
-        <div class="col-md-8">54556</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consignor Address </div>
-        <div class="col-md-8">Kottakkal</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consignor City</div>
-        <div class="col-md-8">Kottakkal</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Pickup Route</div>
-        <div class="col-md-8"> perithalmanna</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consignee</div>
-        <div class="col-md-8">Sd</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consignee Phone</div>
-        <div class="col-md-8">4398985498</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consigee Address</div>
-        <div class="col-md-8">perithalmanna</div>
-    </div>
-
-    <div class="row mb-2">
-        <div class="col-md-4 fw-bold">Consignee City</div>
-        <div class="col-md-8">Vengara, Malappuram</div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-4 fw-bold">Payment</div>
-        <div class="col-md-8">To pay</div>
-    </div>   
-     <div class="row mb-3">
-        <div class="col-md-4 fw-bold">Notes</div>
-        <div class="col-md-8"></div> 
-    </div>
-    </div>
-
-
+  <div class="container">
     <div class="order-card">
-    <h5 class="section-title">Particulars</h5>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <span class="text-primary" style="font-weight: bold; font-size: 22px">
+          <i
+            class="fas fa-arrow-left me-2 back-arrow"
+            style="color: black"
+            onclick="history.back()"
+          ></i>
+          <span id="pod-no">Loading...</span>
+        </span>
+        <div class="no-print">
+          <button class="btn btn-primary" onclick="window.print()">
+            <i class="fas fa-print me-2"></i>Print
+          </button>
+        </div>
+      </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
+      <div id="order-content">
+        <div class="loading-spinner">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Particulars section will be added here dynamically -->
+    <div id="particulars-section"></div>
+  </div>
+
+  <script>
+    // API URL
+    const API_URL = "https://www.loginlogistics.in/main/driverapp/edit-order.php";
+
+    // Helper: show generic error
+    function showError(message) {
+      document.getElementById("order-content").innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+          <h4>Failed to load order details</h4>
+          <p>${message}</p>
+          <button class="btn btn-primary mt-2" onclick="fetchOrderData()">
+            <i class="fas fa-redo me-2"></i>Try Again
+          </button>
+        </div>
+      `;
+      document.getElementById("particulars-section").innerHTML = "";
+    }
+
+    // Helper: show "not found"
+    function showNotFound(ord_id, data) {
+      document.getElementById("order-content").innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-search fa-2x mb-3"></i>
+          <h4>Order Not Found</h4>
+          <p>The order with ID "${ord_id}" was not found in the system.</p>
+          <p class="small text-muted">API Response: ${JSON.stringify(data)}</p>
+          <button class="btn btn-primary mt-2" onclick="fetchOrderData()">
+            <i class="fas fa-redo me-2"></i>Try Again
+          </button>
+        </div>
+      `;
+      document.getElementById("particulars-section").innerHTML = "";
+    }
+
+    // Function to fetch order data from API
+    async function fetchOrderData() {
+      try {
+        console.log("Starting to fetch order data...");
+
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 🔑 Robust order ID detection:
+        // 1) ?ord_id=...   (preferred)
+        // 2) ?orderId=...  (from view_order page)
+        // 3) localStorage 'selected_order_id'
+        let ord_id =
+          urlParams.get("ord_id") ||
+          urlParams.get("orderId") ||
+          localStorage.getItem("selected_order_id") ||
+          "";
+
+        // Fallback: trim spaces
+        ord_id = (ord_id || "").trim();
+
+        const app_id =
+          localStorage.getItem("app_id") ||
+          "Mzk-"; // default as you use everywhere
+
+        console.log("Using order ID:", ord_id, "and app ID:", app_id);
+
+        if (!ord_id) {
+          showError("No order ID found in URL or storage.");
+          return;
+        }
+
+        // Build JSON body (consistent with your other pages)
+        const body = {
+          app_id: app_id,
+          ord_id: ord_id,
+        };
+
+        console.log("Making API request to:", API_URL, "with body:", body);
+
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+
+        console.log("API response status:", response.status);
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Full API response data:", data);
+
+        // Your sample response was a flat object like:
+        // { "result":"1", "ord_id":"OQ", "consignor_name":"...", ... }
+        // So we just check result === "1"
+        if (data.result !== "1") {
+          console.log("API returned result != 1, showing not found");
+          showNotFound(ord_id, data);
+          return;
+        }
+
+        // Display actual data
+        displayOrderData(data);
+      } catch (error) {
+        console.error("Error fetching order data:", error);
+        showError(error.message);
+      }
+    }
+
+    // Function to display order data
+    function displayOrderData(data) {
+      console.log("Displaying order data:", data);
+
+      // Update POD number with actual API data
+      document.getElementById("pod-no").textContent = `POD No: ${
+        data.pod_no || "N/A"
+      } Order Details`;
+
+      // Generate HTML content with actual API data
+      const content = `
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Warehouse</div>
+          <div class="col-md-8">LOG-IN LOGISTICS</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignor</div>
+          <div class="col-md-8">${data.consignor_name || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignor Phone</div>
+          <div class="col-md-8">${data.consignor_phone || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignor Inv no</div>
+          <div class="col-md-8">${data.supp_inv_no || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignor Address</div>
+          <div class="col-md-8">${data.consignor_address || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignor City</div>
+          <div class="col-md-8">${data.consignor_city || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Pickup Route</div>
+          <div class="col-md-8">${data.route_name || data.route || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignee</div>
+          <div class="col-md-8">${data.consignee_name || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignee Phone</div>
+          <div class="col-md-8">${data.consignee_phone || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignee Address</div>
+          <div class="col-md-8">${data.consignee_address || "N/A"}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-4 fw-bold">Consignee City</div>
+          <div class="col-md-8">${data.consignee_city || "N/A"}</div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-4 fw-bold">Payment</div>
+          <div class="col-md-8">${data.payment_type || "N/A"}</div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-4 fw-bold">Notes</div>
+          <div class="col-md-8">${data.notes || ""}</div>
+        </div>
+      `;
+
+      document.getElementById("order-content").innerHTML = content;
+
+      // Add particulars section with actual API data
+      addParticularsSection(data);
+    }
+
+    // Function to add particulars section
+    function addParticularsSection(data) {
+      // Calculate totals with proper parsing and fallbacks
+      const boxSmallQty = parseInt(data.box_small_qty) || 0;
+      const boxMediumQty = parseInt(data.box_medium_qty) || 0;
+      const boxLargeQty = parseInt(data.box_large_qty) || 0;
+      const coverSmallQty = parseInt(data.cover_small_qty) || 0;
+      const coverMediumQty = parseInt(data.cover_medium_qty) || 0;
+      const coverLargeQty = parseInt(data.cover_large_qty) || 0;
+
+      const boxSmallPrice = parseFloat(data.box_small_price) || 0;
+      const boxMediumPrice = parseFloat(data.box_medium_price) || 0;
+      const boxLargePrice = parseFloat(data.box_large_price) || 0;
+      const coverSmallPrice = parseFloat(data.cover_small_price) || 0;
+      const coverMediumPrice = parseFloat(data.cover_medium_price) || 0;
+      const coverLargePrice = parseFloat(data.cover_large_price) || 0;
+
+      const totalQty =
+        boxSmallQty +
+        boxMediumQty +
+        boxLargeQty +
+        coverSmallQty +
+        coverMediumQty +
+        coverLargeQty;
+
+      const totalAmount =
+        boxSmallQty * boxSmallPrice +
+        boxMediumQty * boxMediumPrice +
+        boxLargeQty * boxLargePrice +
+        coverSmallQty * coverSmallPrice +
+        coverMediumQty * coverMediumPrice +
+        coverLargeQty * coverLargePrice;
+
+      const particularsHTML = `
+        <div class="order-card">
+          <h5 class="section-title">Particulars</h5>
+
+          <table class="table table-bordered">
+            <thead>
+              <tr>
                 <th>Particular</th>
                 <th>Small</th>
                 <th>Medium</th>
                 <th>Large</th>
                 <th>X-Large</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
                 <td>Box</td>
-                <td>1</td>
+                <td>${boxSmallQty}</td>
+                <td>${boxMediumQty}</td>
+                <td>${boxLargeQty}</td>
                 <td>0</td>
-                <td>0</td>
-                <td>0</td>
-            </tr>
-            <tr>
+              </tr>
+              <tr>
                 <td>Packet</td>
                 <td>0</td>
                 <td>0</td>
                 <td>0</td>
                 <td>0</td>
-            </tr>
-            <tr>
+              </tr>
+              <tr>
                 <td>Cover</td>
+                <td>${coverSmallQty}</td>
+                <td>${coverMediumQty}</td>
+                <td>${coverLargeQty}</td>
                 <td>0</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-            </tr>
-            <tr>
+              </tr>
+              <tr>
                 <td>Envelope</td>
                 <td>0</td>
                 <td>0</td>
                 <td>0</td>
                 <td>0</td>
-            </tr>
-        </tbody>
-    </table>
+              </tr>
+            </tbody>
+          </table>
 
-   <div class="d-flex justify-content-end gap-3 mt-3">
-        <div class="col-md-6 fw-bold">Total Qty</div>
-        <div class="col-md-6">1</div>
-    </div>
+          <div class="d-flex justify-content-end gap-3 mt-3">
+            <div class="fw-bold">Total Qty</div>
+            <div class="ms-3">${totalQty}</div>
+          </div>
 
-   <div class="row">
-     <div class="d-flex justify-content-end gap-3 mt-3">
-    <div class="col-md-6 fw-bold">Total Amount</div>
-        
-    <div class="col-md-3">39.00</div>
-    </div>
-   </div>
+          <div class="d-flex justify-content-end gap-3 mt-2">
+            <div class="fw-bold">Total Amount</div>
+            <div class="ms-3">₹${totalAmount.toFixed(2)}</div>
+          </div>
+        </div>
+      `;
 
+      document.getElementById("particulars-section").innerHTML = particularsHTML;
+    }
 
-</div>
-<script>
-function goBackPage() {
-    window.location.href = "view_order.html"; 
-}
-</script>
-
-<script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
-
+    // Initialize the page when it loads
+    document.addEventListener("DOMContentLoaded", function () {
+      console.log("DOM loaded, starting data fetch...");
+      fetchOrderData();
+    });
+  </script>
 </body>
 </html>

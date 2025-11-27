@@ -7,145 +7,355 @@
 
 <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
-<link rel="stylesheet" href="css/edit_delivery.css" />
 
+<style>
+.app-header {
+  background-color: #ff7b00;
+  padding: 15px 0;
+  color: white;
+}
+
+.content-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 100px;
+}
+
+/* SIMPLE INFO UI */
+.simple-info {
+  font-size: 16px;
+  color: #333;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e2e2;
+}
+
+.simple-info strong {
+  font-weight: 600;
+  color: #000;
+}
+
+/* QUANTITY SECTION */
+.qty-grid { margin-bottom: 20px; }
+
+.qty-card {
+  background: #ffffff;
+  border: 1px solid #eee;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.qty-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+}
+
+.qty-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ff7b00;
+}
+
+/* STATUS OPTIONS */
+.status-options {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.status-option {
+  flex: 1;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.status-option.selected {
+  border-color: #ff7b00;
+  background-color: #fff5e6;
+}
+
+.image-upload {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.existing-image img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+}
+
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 12px;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  z-index: 9999;
+}
+
+
+main.container {
+  padding-bottom: 120px;
+}
+
+.btn-lg {
+  background-color: #f39e00;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: 600;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  display: none;
+}
+
+/* Smaller on small screens */
+@media (max-width: 480px) {
+  .btn-lg {
+    padding: 8px 18px;
+    font-size: 14px;
+    border-radius: 15px;
+  }
+}
+
+
+
+</style>
 </head>
+
 <body>
 
-<div class="container-fluid ">
+<!-- HEADER -->
+<header class="app-header mb-3">
+  <div class="container d-flex align-items-center">
+    <i class="fas fa-arrow-left fa-lg me-3" id="backButton" style="cursor:pointer;"></i>
+    <h5 class="mb-0 fw-bold">Update Delivery Status</h5>
+  </div>
+</header>
 
-  <!-- HEADER -->
-  <header class="app-header mb-3">
-    <div class="container d-flex align-items-center">
-      <i class="fas fa-arrow-left fa-lg me-3" id="backButton" style="cursor:pointer;"></i>
-      <h5 class="mb-0 fw-bold">Update Delivery Status</h5>
+<main class="container">
+  <div class="content-card">
+
+    <!-- LOADING -->
+    <div class="text-center" id="loadingSpinner">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-2">Loading order details...</p>
     </div>
-  </header>
 
-  <main class="container">
-    <div class="content-card">
-      <form id="deliveryForm" novalidate>
-        <!-- Order Selection -->
-        <div class="input-group">
-          <i class="fas fa-list-alt"></i>
-          <select class="form-select custom-input" id="orderSelect" required>
-            <option value="" disabled>Select an order</option>
-            <option value="ORD00123">ORD00123</option>
-            <option value="ORD00124">ORD00124</option>
-            <option value="ORD00125">ORD00125</option>
-            <option value="ORD00126">ORD00126</option>
-            <option value="ORD00127">ORD00127</option>
-            <option value="ORD00128">ORD00128</option>
-          </select>
-          <div class="error-msg" id="error-orderSelect"></div>
-        </div>
-
-        <!-- Delivery Status -->
-        <label class="mb-2 fw-semibold">Delivery Status</label>
-        <div class="status-options mb-3">
-          <div class="status-option selected" data-status="delivered">
-           <i class="fa-solid fa-circle-check" style="color: #00ff11;"></i>
-            <div>Delivery Completed</div>
-          </div>
-          <div class="status-option" data-status="cancelled">
-          <i class="fa-solid fa-circle-xmark" style="color: #e02929;"></i>
-            <div>Delivery Cancelled</div>
-          </div>
-        </div>
-        <input type="hidden" id="deliveryStatus" name="deliveryStatus" value="delivered" required>
-
-        <!-- Delivery Notes -->
-        <div class="input-group">
-          <i class="fas fa-sticky-note"></i>
-          <textarea class="form-control custom-input" id="deliveryNotes" placeholder="Delivery Notes" rows="3"></textarea>
-          <div class="error-msg" id="error-deliveryNotes"></div>
-        </div>
-
-        <!-- Image Upload -->
-        <label class="fw-semibold mb-2">Capture Proof Image</label>
-        <div class="image-upload" id="imageUpload">
-          <i class="fas fa-camera fa-2x mb-2"></i>
-          <p>Previous image exists</p>
-          <p class="text-muted">Tap to capture new image</p>
-        </div>
-        <div class="existing-image text-center">
-          <img src="" alt="Delivery proof image">
-        </div>
-        <input type="file" id="imageInput" accept="image/*" style="display:none;">
-      </form>
+    <!-- ERROR -->
+    <div class="error-message text-center text-danger fw-bold" id="errorMessage" style="display:none;">
+      <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
     </div>
-  </main>
 
-  <!-- FIXED FOOTER -->
-  <footer class="fixed-footer">
-    <div class="container">
-      <div class="row gx-3">
-        <div class="d-flex justify-content-center">
-  <button id="saveButton" class="btn btn-lg mt-3">Save</button>
-</div>
+    <form id="deliveryForm" style="display:none;">
+
+      <!-- SIMPLE POD + PAYMENT -->
+      <div class="simple-info">
+        <strong>POD No:</strong> <span id="podDisplay">-</span>
       </div>
-    </div>
-  </footer>
 
+      <div class="simple-info">
+        <strong>Payment Type:</strong> <span id="paymentTypeDisplay">-</span>
+      </div>
+
+      <!-- QUANTITY -->
+      <label class="mt-3 mb-2 fw-semibold">Order Quantities</label>
+      <div class="row g-2 qty-grid">
+        <div class="col-6"><div class="qty-card"><span class="qty-title">Small Box</span><span class="qty-value" id="smallBoxQty">0</span></div></div>
+        <div class="col-6"><div class="qty-card"><span class="qty-title">Medium Box</span><span class="qty-value" id="mediumBoxQty">0</span></div></div>
+        <div class="col-6"><div class="qty-card"><span class="qty-title">Large Box</span><span class="qty-value" id="largeBoxQty">0</span></div></div>
+
+        <div class="col-6"><div class="qty-card"><span class="qty-title">Small Cover</span><span class="qty-value" id="smallCoverQty">0</span></div></div>
+        <div class="col-6"><div class="qty-card"><span class="qty-title">Medium Cover</span><span class="qty-value" id="mediumCoverQty">0</span></div></div>
+        <div class="col-6"><div class="qty-card"><span class="qty-title">Large Cover</span><span class="qty-value" id="largeCoverQty">0</span></div></div>
+      </div>
+
+      <!-- STATUS SELECT -->
+      <label class="mb-2 fw-semibold">Delivery Status</label>
+      <div class="status-options">
+        <div class="status-option selected" data-status="delivered">
+          <i class="fa-solid fa-circle-check" style="color:#00c600;"></i><div>Delivered</div>
+        </div>
+        <div class="status-option" data-status="cancelled">
+          <i class="fa-solid fa-circle-xmark" style="color:#fd1d1d;"></i><div>Cancelled</div>
+        </div>
+      </div>
+      <input type="hidden" id="deliveryStatus" value="delivered">
+
+      <!-- NOTES -->
+      <textarea id="deliveryNotes" rows="3" class="form-control mb-3" placeholder="Delivery notes"></textarea>
+
+      <!-- IMAGE -->
+      <div class="image-upload mb-2" id="imageUpload">
+        <i class="fas fa-camera fa-2x"></i>
+        <p>Tap to upload proof image</p>
+      </div>
+
+      <div class="existing-image text-center" style="display:none;">
+        <img id="proofImage" alt="Proof">
+      </div>
+
+      <input type="file" id="imageInput" accept="image/*" style="display:none;">
+
+    </form>
+  </div>
+</main>
+
+<footer class="fixed-footer">
+  <button id="saveButton" class="btn btn-lg w-100" style="display:none;">Save</button>
+</footer>
 </div>
 
-<script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
 <script>
-document.getElementById('backButton').addEventListener('click', function() {
-    window.location.href = 'delivery_status.html';
+const APP_ID = "Mzk-";
+let proofImageSelected = false;
+
+document.getElementById("backButton").addEventListener("click",()=>{ 
+  window.location.href="delivery_status.html";
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  const statusOptions = document.querySelectorAll('.status-option');
-  const statusInput = document.getElementById('deliveryStatus');
-  const imageUpload = document.getElementById('imageUpload');
-  const imageInput = document.getElementById('imageInput');
-  const orderSelect = document.getElementById('orderSelect');
+document.addEventListener("DOMContentLoaded",()=>{
 
-  // Status selection
-  statusOptions.forEach(option => {
-    option.addEventListener('click', function () {
-      statusOptions.forEach(opt => opt.classList.remove('selected'));
-      this.classList.add('selected');
-      statusInput.value = this.getAttribute('data-status');
-    });
-  });
+  const notesInput = document.getElementById("deliveryNotes");
+  const saveBtn = document.getElementById("saveButton");
+  const imageInput = document.getElementById("imageInput");
+  const errorNotes = document.createElement("div");
+  const errorImage = document.createElement("div");
 
-  // Image upload
-  imageUpload.addEventListener('click', function () {
-    imageInput.click();
-  });
-  imageInput.addEventListener('change', function () {
-    if(this.files && this.files[0]){
+  // Insert message elements below fields
+  errorNotes.style.color = "red";
+  errorNotes.style.fontSize = "13px";
+  errorNotes.style.marginTop = "4px";
+  errorNotes.style.display = "none";
+  notesInput.insertAdjacentElement("afterend", errorNotes);
+
+  errorImage.style.color = "red";
+  errorImage.style.fontSize = "13px";
+  errorImage.style.textAlign = "center";
+  errorImage.style.marginTop = "-10px";
+  errorImage.style.display = "none";
+  document.getElementById("imageUpload").insertAdjacentElement("afterend", errorImage);
+
+  document.getElementById("imageUpload").addEventListener("click",()=>imageInput.click());
+
+  imageInput.addEventListener("change",()=>{
+    if(imageInput.files.length > 0){
+      proofImageSelected = true;
       const reader = new FileReader();
-      reader.onload = function(e){
-        document.querySelector('.existing-image img').src = e.target.result;
-      }
-      reader.readAsDataURL(this.files[0]);
+      reader.onload=e=>{
+        document.getElementById("proofImage").src=e.target.result;
+        document.querySelector(".existing-image").style.display="block";
+      };
+      reader.readAsDataURL(imageInput.files[0]);
+
+      // Hide error once valid
+      errorImage.style.display = "none";
+      document.getElementById("imageUpload").style.borderColor = "#ddd";
     }
   });
 
-  // Form validation
-  function validateForm() {
+  // Save Button Validation
+  saveBtn.addEventListener("click",()=>{
+
     let valid = true;
-    if(orderSelect.value === ""){
-      document.getElementById('error-orderSelect').textContent = "Select an order";
-      document.getElementById('error-orderSelect').style.display = "block";
+
+    // Notes validation
+    if(notesInput.value.trim()===""){
+      notesInput.style.borderColor = "red";
+      errorNotes.textContent = "Notes required";
+      errorNotes.style.display = "block";
       valid = false;
     } else {
-      document.getElementById('error-orderSelect').style.display = "none";
+      notesInput.style.borderColor = "#ccc";
+      errorNotes.style.display = "none";
     }
-    return valid;
-  }
 
-  document.getElementById('saveButton').addEventListener('click', () => {
-    if(validateForm()) alert("Delivery status saved successfully!");
+    // Image validation
+    if(!proofImageSelected){
+      errorImage.textContent = "Proof image required";
+      errorImage.style.display = "block";
+      document.getElementById("imageUpload").style.borderColor = "red";
+      valid = false;
+    } else {
+      errorImage.style.display = "none";
+      document.getElementById("imageUpload").style.borderColor = "#ddd";
+    }
+
+    if(valid){
+      // Replace this with save API call later
+      console.log("Form is valid, ready to save.");
+    }
+
   });
-  document.getElementById('nextButton').addEventListener('click', () => {
-    if(validateForm()) alert("Proceeding to next step...");
-  });
-  });
+
+  // Load the selected order
+  const orderId = localStorage.getItem("selectedOrderId");
+  if(!orderId) return showError("No order selected");
+  fetchOrderDetails(orderId);
+});
+
+
+function showForm(){
+  document.getElementById("loadingSpinner").style.display="none";
+  document.getElementById("deliveryForm").style.display="block";
+  document.getElementById("saveButton").style.display="block";
+}
+
+function showError(msg){
+  document.getElementById("loadingSpinner").style.display="none";
+  document.getElementById("errorMessage").style.display="block";
+  document.getElementById("errorText").textContent = msg;
+}
+
+async function fetchOrderDetails(orderId){
+  try{
+    const res = await fetch("https://www.loginlogistics.in/main/driverapp/get_delivery_order_details.php",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body:JSON.stringify({ ord_id:orderId, app_id:APP_ID })
+    });
+
+    const data = await res.json();
+
+    if(data.result==="1"){
+      document.getElementById("podDisplay").textContent = data.pod_no || "N/A";
+      document.getElementById("paymentTypeDisplay").textContent = data.payment_type || "N/A";
+
+      document.getElementById("smallBoxQty").textContent = data.box_small_qty || "0";
+      document.getElementById("mediumBoxQty").textContent = data.box_medium_qty || "0";
+      document.getElementById("largeBoxQty").textContent = data.box_large_qty || "0";
+
+      document.getElementById("smallCoverQty").textContent = data.cover_small_qty || "0";
+      document.getElementById("mediumCoverQty").textContent = data.cover_medium_qty || "0";
+      document.getElementById("largeCoverQty").textContent = data.cover_large_qty || "0";
+
+      showForm();
+    } else {
+      showError("Failed to load order details");
+    }
+
+  }catch(err){
+    showError("Network error");
+  }
+}
 </script>
+
 
 </body>
 </html>

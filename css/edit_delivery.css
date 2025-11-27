@@ -1,130 +1,74 @@
-/* --------- GENERAL LAYOUT --------- */
-body {
-    background-color: #f8f9fa;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.container-fluid {
-    padding: 0px;
-}
-
 .app-header {
-    background-color: #ffca1d;
-    color: #000000;
-    padding: 20px 20px;
-    width: 100%;    
-    height: 60px;
-    display: flex;
-    align-items: center;
-}
-
-.app-header h5 {
-    margin: 0;
-    font-weight: 0;
+  background-color: #ff7b00 !important;
+  padding: 15px 0 !important;
+  width: 100% !important;
+  color: #000 !important;
 }
 
 .content-card {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-    margin-bottom: 100px; /* space for footer */
+  background:#fff;
+  border-radius:10px;
+  padding:20px;
+  box-shadow:0 2px 10px rgba(0,0,0,.1);
+  margin-bottom:100px;
 }
 
-.input-group {
-    margin-bottom: 15px;
-    position: relative;
+.simple-info {
+  font-size:16px;
+  padding:8px 0;
+  border-bottom:1px solid #e2e2e2;
+  font-weight:500;
+  color:#333;
 }
 
-.input-group i {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #6c757d;
+.qty-card {
+  background:white;
+  border:1px solid #ddd;
+  padding:10px;
+  border-radius:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-.custom-input {
-    padding-left: 40px;
-}
+.qty-value { color:#ff7b00; font-weight:bold; }
 
-.status-options {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
+.status-options { display:flex; gap:15px; margin-bottom:15px; }
 
 .status-option {
-    flex: 1;
-    padding: 12px;
-    text-align: center;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.3s ease;
+  padding:15px;
+  border:2px solid #ddd;
+  border-radius:10px;
+  flex:1;
+  text-align:center;
+  cursor:pointer;
 }
 
 .status-option.selected {
-    border-color: #0d6efd;
-    background-color: #e7f1ff;
+  border-color:#ff7b00;
+  background:#fff4e5;
 }
 
 .image-upload {
-    background-color: #f1f3f5;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  border:2px dashed #bbb;
+  padding:25px;
+  border-radius:10px;
+  text-align:center;
+  cursor:pointer;
 }
 
-.image-upload:hover {
-    background-color: #e9ecef;
-}
-
-.existing-image img {
-    max-width: 100%;
-    border-radius: 8px;
-    margin-top: 10px;
-}
-
-.error-msg {
-    color: red;
-    font-size: 0.85rem;
-    margin-top: 3px;
-    display: none;
-}
-
-/* Footer Buttons */
 .fixed-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: #fff;
-    padding: 10px 0;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  position:fixed;
+  bottom:0; left:0; right:0;
+  background:white;
+  padding:15px;
+  box-shadow:0 -2px 10px rgba(0,0,0,.1);
 }
 
-.fixed-footer .btn {
-    padding: 10px;
-    font-weight: 500;
-}
-
-/* --------- RESPONSIVE --------- */
-@media (max-width: 768px) {
-    .status-options {
-        flex-direction: column;
-    }
-    .status-option {
-        width: 100%;
-    }
-}
-#saveButton {
-    background: linear-gradient(to right, #f9a825, #f57f17);
-    border: none;
-    color: #000000;
-    width: 100%;
-    border-radius: 10px;
+.btn-lg {
+  background:#ff7b00 !important;
+  color:white !important;
+  font-weight:bold;
+  padding:12px;
+  border-radius:25px;
 }
