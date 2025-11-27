@@ -14,13 +14,31 @@
 .route-badge{background:#ff7b00; color:rgb(0, 0, 0); padding:8px; border-radius:8px; font-size:16px; margin-bottom:15px;}
 .status-badge{position:absolute; top:8px; right: 12px; padding:4px 6px; border-radius:4px; font-size:11px;}
 .amount-badge{background:#198754;color:white;padding:2px 5px;border-radius:4px;font-size:10px;margin-top:3px;}
-.status-badge{background:#0dcaf0;color:white;padding:2px 6px;border-radius:4px;font-size:10px;margin-top:3px;}
 /* Updated for edit button positioning - moved upward */
 .order-actions {
   position: absolute;
   bottom: 6px;
   right: 8px;
 }
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 12px;
+  font-size: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.status-green {
+  background-color: #28a745 !important;  /* Green */
+}
+
+.status-red {
+  background-color: #dc3545 !important;  /* Red */
+}
+
 
 .small-action-btn {
   width: 32px;
@@ -204,7 +222,12 @@ function renderOrders(){
   pageOrders.forEach(order =>{
     html += `
 <div class="card p-3 mb-2 position-relative">
-<span class="status-badge">${order.courier_status}</span>
+  <span class="status-badge ${order.courier_status.toLowerCase()==='delivered' ? 'status-green' : 'status-red'}">
+    ${order.courier_status}
+  </span>
+
+
+
 
 <div class="order-row">
 <div class="details-left">

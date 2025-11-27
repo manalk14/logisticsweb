@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pickup Orders</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Header Styles */
+        .header { 
+            background: #ff7b00; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        
+        /* Route Badge */
+        .route-badge {
+            background: #ff7b00; 
+            color: rgb(0, 0, 0); 
+            padding: 8px; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            margin-bottom: 15px;
+        }
+        
+        /* Order Card Styles */
+        .order-card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            border: none;
+            transition: transform 0.2s;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .order-row {
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%; 
+            align-items: center;
+        }
+        
+        /* Payment Status Badges */
+        .payment-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .text-success { background-color: #d4edda; color: #155724; }
+        .text-warning { background-color: #fff3cd; color: #856404; }
+        .text-muted { background-color: #f8f9fa; color: #6c757d; }
+        
+        /* Quantity Display */
+        .quantity-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        
+        .quantity-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .quantity-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .quantity-value {
+            font-weight: 600;
+            color: #ff7b00;
+        }
+        
+        /* Action Buttons */
+        .small-action-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+        
+        /* Loading and No Orders */
+        .loading-spinner {
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .no-orders {
+            text-align: center;
+            padding: 40px 0;
+            color: #6c757d;
+        }
+        
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+            gap: 15px;
+        }
+        
+        /* Order Date */
+        .order-date {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        /* Details Layout */
+        .details-left {
+            flex: 1;
+        }
+        
+        .details-right {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .pod-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: #343a40;
+        }
+        
+        /* Spacing for fixed header */
+        .header-spacing {
+            height: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header p-2 d-flex align-items-center shadow-sm fixed-top">
+        <button id="backButton" class="btn text-black">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h5 class="ms-2 text-black fw-bold mb-0">Pickup Orders</h5>
+    </div>
+
+    <!-- Spacing below fixed header -->
+    <div class="header-spacing"></div>
+
+    <main class="container mt-3">
+        <!-- Route Badge -->
+        <div id="routeBadge"></div>
+        
+        <!-- Orders List -->
+        <div id="orderList"></div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2">Loading Orders...</p>
+        </div>
+
+        <!-- No Orders Message -->
+        <div id="noOrdersMessage" class="no-orders" style="display:none;">
+            <i class="fa-solid fa-box-open fa-3x"></i>
+            <p>No pickup orders found.</p>
+        </div>
+
+        <!-- Pagination -->
+        <div id="paginationContainer" class="pagination-container" style="display: none">
+            <button id="prevBtn" class="btn btn-outline-dark btn-sm">◀ Previous</button>
+            <span id="pageInfo" class="px-2"></span>
+            <button id="nextBtn" class="btn btn-outline-dark btn-sm">Next ▶</button>
+        </div>
+    </main>
+
+    <!-- ROUTE SELECT MODAL -->
+    <div class="modal fade" id="routeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Route</h5>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label fw-bold">Choose Route:</label>
+                    <select id="routeDropdown" class="form-control">
+                        <option value="">-- Select Route --</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelBtn">Close</button>
+                    <button class="btn btn-primary" id="applyRouteBtn">Apply Route</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const APP_ID = "Mzk-";
+        let selectedRouteId = "";
+        let selectedRoute = "";
+        let allOrders = [];
+        let currentPage = 1;
+        const PER_PAGE = 10;
+
+        // Initialize page
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Show route selection modal
+            new bootstrap.Modal(document.getElementById("routeModal")).show();
+            loadRoutes();
+            
+            // Back button handler
+            document.getElementById("backButton").addEventListener("click", () => { 
+                window.location.href = "index.html";
+            });
+            
+            // Cancel button handler
+            document.getElementById("cancelBtn").addEventListener("click", () => {
+                window.location.href = "index.html";
+            });
+        });
+
+        // Load available routes
+        async function loadRoutes() {
+            try {
+                const res = await fetch("https://www.loginlogistics.in/main/driverapp/get_my_delivery_routes.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ app_id: APP_ID })
+                });
+
+                const data = await res.json();
+                console.log("Route Response:", data);
+
+                let routes = data.routedet || [];
+
+                if (!routes || routes.length === 0) {
+                    alert("No routes found");
+                    return;
+                }
+
+                const dropdown = document.getElementById("routeDropdown");
+                dropdown.innerHTML = '<option value="">-- Select Route --</option>';
+
+                routes.forEach(r => {
+                    const option = document.createElement("option");
+                    option.value = r.rtid;
+                    option.textContent = r.rt_name;
+                    dropdown.appendChild(option);
+                });
+
+            } catch (err) {
+                console.error("Route Fetch Error:", err);
+                alert("Failed to load routes");
+            }
+        }
+
+        // Apply selected route and load orders
+        document.getElementById("applyRouteBtn").addEventListener("click", () => {
+            selectedRouteId = document.getElementById("routeDropdown").value;
+            selectedRoute = document.getElementById("routeDropdown")
+                           .options[document.getElementById("routeDropdown").selectedIndex].text;
+
+            if (!selectedRouteId) {
+                alert("Please choose a route");
+                return;
+            }
+
+            document.getElementById("routeBadge").innerHTML =
+                `<div class='route-badge'>Route: ${selectedRoute}</div>`;
+
+            document.activeElement.blur();
+            bootstrap.Modal.getInstance(document.getElementById("routeModal")).hide();
+            loadOrders();
+        });
+
+        // Load pickup orders
+        async function loadOrders() {
+            document.getElementById("loadingSpinner").style.display = "block";
+            document.getElementById("orderList").innerHTML = "";
+            document.getElementById("noOrdersMessage").style.display = "none";
+
+            try {
+                const res = await fetch("https://www.loginlogistics.in/main/driverapp/pickup-orders.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        app_id: APP_ID, 
+                        route_id: selectedRouteId 
+                    })
+                });
+
+                const data = await res.json();
+                
+                // Adjust this based on your API response structure
+                allOrders = data.pickupOrders || data.orders || [];
+
+                if (allOrders.length > 0) {
+                    renderOrders();
+                    setupPagination();
+                } else {
+                    document.getElementById("noOrdersMessage").style.display = "block";
+                }
+            } catch (error) {
+                console.error("Error loading orders:", error);
+                document.getElementById("noOrdersMessage").style.display = "block";
+            } finally {
+                document.getElementById("loadingSpinner").style.display = "none";
+            }
+        }
+
+        // Render orders with quantity display
+        function renderOrders() {
+            let start = (currentPage - 1) * PER_PAGE;
+            let pageOrders = allOrders.slice(start, start + PER_PAGE);
+            let html = "";
+
+            pageOrders.forEach(order => {
+                const payClass = getPayClass(order.paymentStatus);
+                const payText = getPayText(order.paymentStatus);
+                const payLabel = order.paymentStatus === "none" ? "" : 
+                    `<span class="payment-status ${payClass}">${payText}</span>`;
+
+                html += `
+                <div class="card order-card p-3 position-relative">
+                    <div class="order-row">
+                        <div class="pod-title">POD #${escape(order.podNo || order.pod_no)}</div>
+                        ${payLabel}
+                    </div>
+
+                    <div class="order-row mt-2">
+                        <div class="details-left">
+                            <p class="mb-1"><strong>Consignee:</strong> ${escape(order.consignee)}</p>
+                            <p class="mb-1"><strong>Consigner:</strong> ${escape(order.consigner || order.consignor)}</p>
+                            <p class="order-date text-muted">
+                                <i class="fa-solid fa-calendar"></i> ${formatDate(order.date || order.add_date)}
+                            </p>
+                        </div>
+
+                        <div class="details-right">
+                            <p class="mb-1"><strong>Route:</strong> ${escape(order.route)}</p>
+                            <p class="mb-1"><strong>Stop:</strong> ${escape(order.stop)}</p>
+                        </div>
+                    </div>
+
+                    <!-- Quantity Display Section -->
+                    <div class="quantity-section">
+                        <div class="quantity-row">
+                            <span class="quantity-label">Small Box:</span>
+                            <span class="quantity-value">${order.box_small_qty || order.smallBoxQty || 0}</span>
+                        </div>
+                        <div class="quantity-row">
+                            <span class="quantity-label">Medium Box:</span>
+                            <span class="quantity-value">${order.box_medium_qty || order.mediumBoxQty || 0}</span>
+                        </div>
+                        <div class="quantity-row">
+                            <span class="quantity-label">Large Box:</span>
+                            <span class="quantity-value">${order.box_large_qty || order.largeBoxQty || 0}</span>
+                        </div>
+                        <div class="quantity-row">
+                            <span class="quantity-label">Small Cover:</span>
+                            <span class="quantity-value">${order.cover_small_qty || order.smallCoverQty || 0}</span>
+                        </div>
+                        <div class="quantity-row">
+                            <span class="quantity-label">Medium Cover:</span>
+                            <span class="quantity-value">${order.cover_medium_qty || order.mediumCoverQty || 0}</span>
+                        </div>
+                        <div class="quantity-row">
+                            <span class="quantity-label">Large Cover:</span>
+                            <span class="quantity-value">${order.cover_large_qty || order.largeCoverQty || 0}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2 justify-content-end mt-3">
+                        <button class="btn btn-warning small-action-btn" onclick="editPickupOrder('${order.ord_id || order.id}')">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-primary small-action-btn" onclick="viewPickupOrder('${order.ord_id || order.id}')">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById("orderList").innerHTML = html;
+        }
+
+        // Setup pagination
+        function setupPagination() {
+            const totalPages = Math.ceil(allOrders.length / PER_PAGE);
+            document.getElementById("paginationContainer").style.display = "flex";
+            document.getElementById("pageInfo").innerText = `${currentPage}/${totalPages}`;
+
+            document.getElementById("prevBtn").onclick = () => {
+                if (currentPage > 1) { 
+                    currentPage--; 
+                    renderOrders(); 
+                    setupPagination(); 
+                }
+            };
+
+            document.getElementById("nextBtn").onclick = () => {
+                if (currentPage < totalPages) { 
+                    currentPage++; 
+                    renderOrders(); 
+                    setupPagination(); 
+                }
+            };
+        }
+
+        // Helper functions
+        function getPayClass(status) {
+            return status === "paid" ? "text-success" : 
+                   status === "to-pay" ? "text-warning" : "text-muted";
+        }
+
+        function getPayText(status) {
+            return status === "paid" ? "Paid" : 
+                   status === "to-pay" ? "To Pay" : "";
+        }
+
+        function escape(str) {
+            return (str || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return "N/A";
+            try {
+                if (dateString.includes("/")) {
+                    const parts = dateString.split("/");
+                    if (parts.length === 3) {
+                        const date = new Date(parts[2], parts[1] - 1, parts[0]);
+                        if (!isNaN(date.getTime())) {
+                            return date.toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                            });
+                        }
+                    }
+                }
+
+                const date = new Date(dateString);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                    });
+                }
+
+                return dateString;
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        // Action functions
+        function editPickupOrder(id) {
+            localStorage.setItem("selectedPickupOrderId", id);
+            window.location.href = "edit_pickup.html";
+        }
+
+        function viewPickupOrder(id) {
+            localStorage.setItem("selectedPickupOrderId", id);
+            window.location.href = "view_pickup.html";
+        }
+    </script>
+</body>
+</html>

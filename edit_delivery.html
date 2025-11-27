@@ -12,7 +12,7 @@
 .app-header {
   background-color: #ff7b00;
   padding: 15px 0;
-  color: white;
+  color: rgb(0, 0, 0);
 }
 
 .content-card {
@@ -55,9 +55,14 @@
   color: #444;
 }
 
-.qty-value {
-  font-size: 16px;
+.qty-input {
+  width: 70px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
   font-weight: bold;
+  font-size: 16px;
   color: #ff7b00;
 }
 
@@ -107,7 +112,6 @@
   z-index: 9999;
 }
 
-
 main.container {
   padding-bottom: 120px;
 }
@@ -125,6 +129,50 @@ main.container {
   display: none;
 }
 
+/* PAYMENT SECTION */
+.payment-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  border-left: 4px solid  #ffc107;
+}
+
+.payment-title {
+  font-weight: 600;
+  color: #ffc107;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.payment-input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 16px;
+}
+
+.payment-currency {
+  font-weight: bold;
+  color: #ffa42d;
+}
+
+.error-text {
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
 /* Smaller on small screens */
 @media (max-width: 480px) {
   .btn-lg {
@@ -132,10 +180,11 @@ main.container {
     font-size: 14px;
     border-radius: 15px;
   }
+  
+  .qty-input {
+    width: 60px;
+  }
 }
-
-
-
 </style>
 </head>
 
@@ -177,13 +226,75 @@ main.container {
       <!-- QUANTITY -->
       <label class="mt-3 mb-2 fw-semibold">Order Quantities</label>
       <div class="row g-2 qty-grid">
-        <div class="col-6"><div class="qty-card"><span class="qty-title">Small Box</span><span class="qty-value" id="smallBoxQty">0</span></div></div>
-        <div class="col-6"><div class="qty-card"><span class="qty-title">Medium Box</span><span class="qty-value" id="mediumBoxQty">0</span></div></div>
-        <div class="col-6"><div class="qty-card"><span class="qty-title">Large Box</span><span class="qty-value" id="largeBoxQty">0</span></div></div>
+        <!-- Box Quantities -->
+        <div class="col-6">
+          <div class="qty-card">
+            <span class="qty-title">Small Box</span>
+            <input type="number" class="qty-input" id="smallBoxQty" value="0" min="0">
+          </div>
+        </div>
+        
+        <div class="col-6">
+          <div class="qty-card">
+            <span class="qty-title">Medium Box</span>
+            <input type="number" class="qty-input" id="mediumBoxQty" value="0" min="0">
+          </div>
+        </div>
+        
+        <div class="col-6">
+          <div class="qty-card">
+            <span class="qty-title">Large Box</span>
+            <input type="number" class="qty-input" id="largeBoxQty" value="0" min="0">
+          </div>
+        </div>
 
-        <div class="col-6"><div class="qty-card"><span class="qty-title">Small Cover</span><span class="qty-value" id="smallCoverQty">0</span></div></div>
-        <div class="col-6"><div class="qty-card"><span class="qty-title">Medium Cover</span><span class="qty-value" id="mediumCoverQty">0</span></div></div>
-        <div class="col-6"><div class="qty-card"><span class="qty-title">Large Cover</span><span class="qty-value" id="largeCoverQty">0</span></div></div>
+        <!-- Cover Quantities -->
+        <div class="col-6">
+          <div class="qty-card">
+            <span class="qty-title">Small Cover</span>
+            <input type="number" class="qty-input" id="smallCoverQty" value="0" min="0">
+          </div>
+        </div>
+        
+        <div class="col-6">
+          <div class="qty-card">
+            <span class="qty-title">Medium Cover</span>
+            <input type="number" class="qty-input" id="mediumCoverQty" value="0" min="0">
+          </div>
+        </div>
+        
+        <div class="col-6">
+          <div class="qty-card">
+            <span class="qty-title">Large Cover</span>
+            <input type="number" class="qty-input" id="largeCoverQty" value="0" min="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENT COLLECTION SECTION (For To Pay orders) -->
+      <div class="payment-section" id="paymentSection" style="display:none;">
+        <div class="payment-title">
+          <i class="fas fa-money-bill-wave"></i>
+          <span>Payment Collection</span>
+        </div>
+
+        <p class="fw-semibold mb-1">
+          Total Amount: ₹<span id="totalAmountDisplay">0.00</span>
+        </p>
+
+        <div class="payment-input-group mt-2">
+          <span class="payment-currency">₹</span>
+          <input
+            type="number"
+            id="receivedAmount"
+            class="payment-input"
+            placeholder="Enter received amount"
+            min="0"
+            step="0.01"
+          >
+        </div>
+        <div id="receivedError" class="error-text" style="display:none;"></div>
+        <small class="text-muted">Enter the amount received from the consignee</small>
       </div>
 
       <!-- STATUS SELECT -->
@@ -220,18 +331,18 @@ main.container {
 <footer class="fixed-footer">
   <button id="saveButton" class="btn btn-lg w-100" style="display:none;">Save</button>
 </footer>
-</div>
 
 <script>
 const APP_ID = "Mzk-";
 let proofImageSelected = false;
+let currentOrderData = null;
+let totalAmount = 0;
 
 document.getElementById("backButton").addEventListener("click",()=>{ 
   window.location.href="delivery_status.html";
 });
 
 document.addEventListener("DOMContentLoaded",()=>{
-
   const notesInput = document.getElementById("deliveryNotes");
   const saveBtn = document.getElementById("saveButton");
   const imageInput = document.getElementById("imageInput");
@@ -252,15 +363,16 @@ document.addEventListener("DOMContentLoaded",()=>{
   errorImage.style.display = "none";
   document.getElementById("imageUpload").insertAdjacentElement("afterend", errorImage);
 
+  // Image upload handling
   document.getElementById("imageUpload").addEventListener("click",()=>imageInput.click());
 
-  imageInput.addEventListener("change",()=>{
+  imageInput.addEventListener("change",()=> {
     if(imageInput.files.length > 0){
       proofImageSelected = true;
       const reader = new FileReader();
-      reader.onload=e=>{
-        document.getElementById("proofImage").src=e.target.result;
-        document.querySelector(".existing-image").style.display="block";
+      reader.onload = e => {
+        document.getElementById("proofImage").src = e.target.result;
+        document.querySelector(".existing-image").style.display = "block";
       };
       reader.readAsDataURL(imageInput.files[0]);
 
@@ -268,6 +380,15 @@ document.addEventListener("DOMContentLoaded",()=>{
       errorImage.style.display = "none";
       document.getElementById("imageUpload").style.borderColor = "#ddd";
     }
+  });
+
+  // Status option selection
+  document.querySelectorAll('.status-option').forEach(option => {
+    option.addEventListener('click', function() {
+      document.querySelectorAll('.status-option').forEach(opt => opt.classList.remove('selected'));
+      this.classList.add('selected');
+      document.getElementById('deliveryStatus').value = this.dataset.status;
+    });
   });
 
   // Save Button Validation
@@ -297,9 +418,33 @@ document.addEventListener("DOMContentLoaded",()=>{
       document.getElementById("imageUpload").style.borderColor = "#ddd";
     }
 
+    // Payment validation for "To Pay" orders
+    const paymentTypeText = document.getElementById("paymentTypeDisplay").textContent.trim();
+    const receivedError = document.getElementById("receivedError");
+    receivedError.style.display = "none";
+    receivedError.textContent = "";
+
+    if (paymentTypeText === "To Pay") {
+      const receivedStr = document.getElementById("receivedAmount").value;
+      const received = parseFloat(receivedStr);
+
+      if (!receivedStr || isNaN(received) || received <= 0) {
+        receivedError.textContent = "Please enter a valid amount greater than 0";
+        receivedError.style.display = "block";
+        document.getElementById("receivedAmount").style.borderColor = "red";
+        valid = false;
+      } else if (received > totalAmount) {
+        receivedError.textContent = "Received amount cannot be more than Total Amount";
+        receivedError.style.display = "block";
+        document.getElementById("receivedAmount").style.borderColor = "red";
+        valid = false;
+      } else {
+        document.getElementById("receivedAmount").style.borderColor = "#ddd";
+      }
+    }
+
     if(valid){
-      // Replace this with save API call later
-      console.log("Form is valid, ready to save.");
+      saveDeliveryStatus();
     }
 
   });
@@ -323,6 +468,16 @@ function showError(msg){
   document.getElementById("errorText").textContent = msg;
 }
 
+// Format payment type (topay -> To Pay, etc.)
+function formatPaymentType(v){
+  if(!v) return "-";
+  v = v.toLowerCase();
+  if(v === "topay" || v === "to-pay" || v === "to pay") return "To Pay";
+  if(v === "paidorder" || v === "paid_order" || v === "paid order") return "Paid Order";
+  if(v === "none") return "None";
+  return v.charAt(0).toUpperCase() + v.slice(1);
+}
+
 async function fetchOrderDetails(orderId){
   try{
     const res = await fetch("https://www.loginlogistics.in/main/driverapp/get_delivery_order_details.php",{
@@ -333,17 +488,43 @@ async function fetchOrderDetails(orderId){
 
     const data = await res.json();
 
-    if(data.result==="1"){
+    if(data.result === "1"){
+      currentOrderData = data;
+      
       document.getElementById("podDisplay").textContent = data.pod_no || "N/A";
-      document.getElementById("paymentTypeDisplay").textContent = data.payment_type || "N/A";
+      document.getElementById("paymentTypeDisplay").textContent = formatPaymentType(data.payment_type);
 
-      document.getElementById("smallBoxQty").textContent = data.box_small_qty || "0";
-      document.getElementById("mediumBoxQty").textContent = data.box_medium_qty || "0";
-      document.getElementById("largeBoxQty").textContent = data.box_large_qty || "0";
+     // After setting the quantity fields from API
+document.getElementById("smallBoxQty").value = data.box_small_qty || "0";
+document.getElementById("mediumBoxQty").value = data.box_medium_qty || "0";
+document.getElementById("largeBoxQty").value = data.box_large_qty || "0";
+document.getElementById("smallCoverQty").value = data.cover_small_qty || "0";
+document.getElementById("mediumCoverQty").value = data.cover_medium_qty || "0";
+document.getElementById("largeCoverQty").value = data.cover_large_qty || "0";
 
-      document.getElementById("smallCoverQty").textContent = data.cover_small_qty || "0";
-      document.getElementById("mediumCoverQty").textContent = data.cover_medium_qty || "0";
-      document.getElementById("largeCoverQty").textContent = data.cover_large_qty || "0";
+// Set max = original quantity so cannot increase
+["smallBoxQty","mediumBoxQty","largeBoxQty",
+ "smallCoverQty","mediumCoverQty","largeCoverQty"].forEach(id=>{
+  const input = document.getElementById(id);
+  const original = parseInt(input.value) || 0;
+  input.setAttribute("max", original);
+  input.addEventListener("input", function(){
+      let val = parseInt(input.value) || 0;
+      if(val > original) input.value = original;   // restrict increase
+      if(val < 0) input.value = 0;                // restrict negatives
+  });
+});
+
+      // Total amount from API: "5,300.00"
+      const totalRaw = data.total_amount || "0.00";
+      document.getElementById("totalAmountDisplay").textContent = totalRaw;
+      totalAmount = parseFloat(totalRaw.replace(/,/g,"")) || 0;
+
+      // Show payment section only for To Pay
+      const rawType = (data.payment_type || "").toLowerCase().replace(/\s+/g,"").replace(/-/g,"");
+      if(rawType === "topay"){
+        document.getElementById("paymentSection").style.display = "block";
+      }
 
       showForm();
     } else {
@@ -351,11 +532,72 @@ async function fetchOrderDetails(orderId){
     }
 
   }catch(err){
+    console.error(err);
     showError("Network error");
   }
 }
-</script>
 
+async function saveDeliveryStatus() {
+  try {
+    const orderId = localStorage.getItem("selectedOrderId");
+    const status = document.getElementById("deliveryStatus").value;
+    const notes = document.getElementById("deliveryNotes").value;
+
+    // Quantities
+    const quantities = {
+      box_small: document.getElementById("smallBoxQty").value || "0",
+      box_medium: document.getElementById("mediumBoxQty").value || "0",
+      box_large: document.getElementById("largeBoxQty").value || "0",
+      cover_small: document.getElementById("smallCoverQty").value || "0",
+      cover_medium: document.getElementById("mediumCoverQty").value || "0",
+      cover_large: document.getElementById("largeCoverQty").value || "0"
+    };
+
+    const paymentTypeText = document.getElementById("paymentTypeDisplay").textContent.trim();
+    let receivedAmount = "";
+
+    if(paymentTypeText === "To Pay"){
+      receivedAmount = document.getElementById("receivedAmount").value || "0";
+    }
+
+    const formData = new FormData();
+    formData.append("ord_id", orderId);
+    formData.append("status", status);
+    formData.append("notes", notes);
+    formData.append("app_id", APP_ID);
+
+    Object.keys(quantities).forEach(key => {
+      formData.append(key, quantities[key]);
+    });
+
+    if(paymentTypeText === "To Pay"){
+      formData.append("received_amount", receivedAmount);
+    }
+
+    if (proofImageSelected) {
+      formData.append("proof_image", document.getElementById("imageInput").files[0]);
+    }
+
+    const response = await fetch("https://www.loginlogistics.in/main/driverapp/update_delivery_status.php", {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert("Delivery status updated successfully!");
+      window.location.href = "delivery_status.html";
+    } else {
+      alert("Failed to update delivery status: " + (result.message || "Unknown error"));
+    }
+
+  } catch (error) {
+    console.error("Error saving delivery status:", error);
+    alert("Error saving delivery status. Please try again.");
+  }
+}
+</script>
 
 </body>
 </html>
