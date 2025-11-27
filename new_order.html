@@ -1120,6 +1120,38 @@ function handleNextConsignee() {
 
   alert("Consignee added. You can enter another now.");
 }
+function showSuccessMessage() {
+  const successDiv = document.createElement('div');
+  successDiv.className = 'success-message';
+  successDiv.innerHTML = `
+    <i class="fas fa-check-circle"></i>
+    <span>Successfully saved new order</span>
+  `;
+
+  Object.assign(successDiv.style, {
+    position: "fixed",
+    top: "10px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    backgroundColor: "#28a745",
+    color: "white",
+    padding: "12px 24px",
+    borderRadius: "6px",
+    fontSize: "18px",
+    zIndex: "9999",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.15)"
+  });
+
+  document.body.appendChild(successDiv);
+
+  setTimeout(() => {
+    successDiv.remove();
+  }, 3000);
+}
+
 
 /* SAVE ALL - UPDATED WITH CONSIGNOR ID CHECK */
 saveBtn.addEventListener('click', () => {
@@ -1196,20 +1228,49 @@ saveBtn.addEventListener('click', () => {
   .then(r => {
     return r.json();
   })
-  .then(data => {
-    if (data.success) {
-      alert("Order saved successfully on server");
-      // Optionally reset the form or redirect
-      console.log('Order saved successfully:', data);
-    } else {
-      alert("Failed to save order: " + (data.message || 'Unknown error'));
-    }
-  })
-  .catch(err => {
-    console.error("Error saving order:", err);
-    alert("Server error, please try again later.");
+.then(data => {
+  console.log("Order saved response:", data);
+
+  showSuccessMessage();
+
+  // Switch to consignor tab
+  const t = new bootstrap.Tab(tab1Btn);
+  t.show();
+
+  // Reset bottom buttons
+  saveBtn.classList.add('d-none');
+  backBtn.classList.add('d-none');
+  nextBtn.classList.remove('d-none');
+
+  // Remove second NEXT button if exists
+  const nc = document.getElementById("nextConsignee");
+  if (nc) nc.remove();
+
+  // Disable consignee tab again
+  tab2Btn.classList.add('disabled');
+  tab2Btn.removeAttribute('data-bs-toggle');
+  tab2Btn.removeAttribute('data-bs-target');
+
+  // Clear fields
+  document.querySelectorAll('input, textarea').forEach(field => {
+    field.value = "";
+    field.classList.remove("is-invalid-field");
+    delete field.dataset.selectedId;
+    delete field.dataset.originalValue;
+    delete field.dataset.cityId;
   });
+
+  // Reset state
+  consignees = [];
+  selectedPayment = null;
+  document.querySelectorAll(".payment-box").forEach(b => b.classList.remove("active"));
+})
+.catch(err => {
+  console.error("Error saving order:", err);
 });
+
+
+ });
 
 // Add event listener for the company name field to clear POD No validation when consigner is selected
 document.getElementById('companyName').addEventListener('change', function() {

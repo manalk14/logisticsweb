@@ -1,6 +1,7 @@
-.header {
-  background-color: #ff7b00 !important;
+#header {
+  background-color: #ffca1d;
 }
+
 
 /* Card Styles */
 .card-body {

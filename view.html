@@ -17,59 +17,105 @@
   />
 
   <style>
-    body {
-      background-color: #f8f9fa;
-      padding: 20px;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .order-card {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-      padding: 25px;
-      margin-bottom: 25px;
-    }
-    .section-title {
-      color: #0d6efd;
-      border-bottom: 2px solid #0d6efd;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
-      font-weight: 600;
-    }
-    .back-arrow {
-      cursor: pointer;
-      transition: color 0.3s;
-    }
-    .back-arrow:hover {
-      color: #0d6efd !important;
-    }
-    .loading-spinner {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 300px;
-    }
-    .error-message {
-      color: #dc3545;
-      text-align: center;
-      padding: 20px;
-    }
-    .table th {
-      background-color: #f1f5fd;
-    }
-    @media print {
-      .no-print {
-        display: none !important;
-      }
-      body {
-        background-color: white;
-        padding: 0;
-      }
-      .order-card {
-        box-shadow: none;
-        border: 1px solid #ddd;
-      }
-    }
+body {
+  background-color: #f8f9fa;
+  padding: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.order-card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  margin-bottom: 25px;
+}
+
+.section-title {
+  color: #0d6efd;
+  border-bottom: 2px solid #0d6efd;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* Print */
+@media print {
+  .no-print { display: none !important; }
+  body { background-color: white; padding: 0; }
+  .order-card { box-shadow: none; border: 1px solid #ddd; }
+}
+
+/* ---- Responsive Styling ---- */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .order-card {
+    padding: 15px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  #pod-no {
+    font-size: 18px;
+  }
+
+  .table {
+    font-size: 14px;
+  }
+
+  /* Stack label/value rows vertically */
+  .row.mb-2 {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px !important;
+  }
+
+  .row.mb-2 .fw-bold {
+    margin-bottom: 3px;
+  }
+
+  /* Print button align */
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start !important;
+  }
+}
+
+/* Table responsiveness */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+}
+/* Position the print button in the top-right corner */
+/* Print button inside the card at top right */
+.no-print {
+  position: relative;
+  margin-left: auto;
+}
+
+/* Responsive print button */
+@media (max-width: 768px) {
+  .no-print {
+    width: 20%;
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 3px;
+  }
+
+  .no-print button {
+    width: 100%;
+  }
+}
+
+
+
   </style>
 </head>
 
@@ -333,7 +379,9 @@
         <div class="order-card">
           <h5 class="section-title">Particulars</h5>
 
-          <table class="table table-bordered">
+         <div class="table-responsive">
+         <table class="table table-bordered">
+
             <thead>
               <tr>
                 <th>Particular</th>
