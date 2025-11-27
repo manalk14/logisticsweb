@@ -8,10 +8,10 @@
   <!-- ✅ Bootstrap CSS -->
   <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
 
-  <!-- ✅ Bootstrap Icons -->
-  <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" /> 
+  <!-- ✅ FontAwesome -->
+  <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
   <link rel="stylesheet" href="css/view_order.css" />
-  
+
   <style>
     .loading-spinner {
       display: none;
@@ -31,34 +31,21 @@
       padding: 15px;
       background-color: #f8f9fa;
       border-radius: 8px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     }
     .page-info {
       font-weight: 500;
       color: #495057;
+      text-align: center;
     }
     .pagination-buttons {
       display: flex;
       gap: 10px;
-    }
-    .page-numbers {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-    }
-    .page-number {
-      padding: 5px 12px;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      cursor: pointer;
-      background: white;
-    }
-    .page-number.active {
-      background-color: #007bff;
-      color: white;
-      border-color: #007bff;
-    }
-    .page-number:hover:not(.active) {
-      background-color: #e9ecef;
     }
     .payment-status {
       font-weight: 500;
@@ -75,6 +62,14 @@
     .card-body p {
       margin-bottom: 0.4rem;
     }
+    .orders-count {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+    .main-content {
+      margin-bottom: 100px; /* Space for fixed pagination */
+    }
   </style>
 </head>
 
@@ -90,33 +85,16 @@
   </div>
 
   <!-- ✅ Main Content -->
-  <main class="container mt-3 mb-5">
+  <main class="container mt-3 mb-5 main-content">
     <!-- Orders List -->
     <div id="orderList"></div>
-    
+
     <!-- Loading Spinner -->
     <div class="loading-spinner" id="loadingSpinner">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
       <p class="mt-2">Loading orders...</p>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination-container" id="paginationContainer" style="display: none;">
-      <div class="pagination-buttons">
-        <button class="btn btn-outline-primary" id="prevBtn">
-          <i class="fa-solid fa-chevron-left me-1"></i> Previous
-        </button>
-      </div>
-      
-      <div class="page-info" id="pageInfo"></div>
-      
-      <div class="pagination-buttons">
-        <button class="btn btn-outline-primary" id="nextBtn">
-          Next <i class="fa-solid fa-chevron-right ms-1"></i>
-        </button>
-      </div>
     </div>
 
     <!-- No Orders Message -->
@@ -127,74 +105,20 @@
     </div>
   </main>
 
-  <!-- 🗑 Delete Reason Modal -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Reason for Deletion</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <textarea id="deleteReason" class="form-control" rows="3" placeholder="Enter reason..."></textarea>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </div>
+  <!-- Pagination Footer -->
+  <div class="pagination-container" id="paginationContainer" style="display: none;">
+    <div class="pagination-buttons">
+      <button class="btn btn-outline-primary" id="prevBtn">
+        <i class="fa-solid fa-chevron-left me-1"></i> Previous
+      </button>
     </div>
-  </div>
 
-  <!-- ✏️ Edit Order Modal -->
-  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Edit Order</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="editForm">
-            <div class="mb-3">
-              <label class="form-label">Order Number</label>
-              <input type="text" class="form-control" id="editOrderId" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Consigner</label>
-              <input type="text" class="form-control" id="editConsigner" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Consignee</label>
-              <input type="text" class="form-control" id="editConsignee" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Stop</label>
-              <input type="text" class="form-control" id="editStop">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Route</label>
-              <input type="text" class="form-control" id="editRoute">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Date</label>
-              <input type="date" class="form-control" id="editDate" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Payment Status</label>
-              <select class="form-control" id="editPaymentStatus">
-                <option value="paid">Paid</option>
-                <option value="to-pay">To Pay</option>
-                <option value="unknown">Unknown</option>
-              </select>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
-        </div>
-      </div>
+    <div class="page-info" id="pageInfo"></div>
+
+    <div class="pagination-buttons">
+      <button class="btn btn-outline-primary" id="nextBtn">
+        Next <i class="fa-solid fa-chevron-right ms-1"></i>
+      </button>
     </div>
   </div>
 
@@ -202,8 +126,8 @@
   <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // Configuration
-    const ORDERS_PER_PAGE = 20;
+    // Configuration - 15 ORDERS PER PAGE
+    const ORDERS_PER_PAGE = 15;
     let currentPage = 1;
     let totalPages = 0;
     let allOrders = [];
@@ -217,14 +141,9 @@
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const noOrdersMessage = document.getElementById("noOrdersMessage");
-    const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-    const editModal = new bootstrap.Modal(document.getElementById("editModal"));
 
-    let orderToDelete = null;
-    let orderToEdit = null;
-
-    // Demo data for testing
-    const demoOrders = generateDemoOrders(85); // Generate 85 demo orders
+    // Set app_id
+    localStorage.setItem('app_id', 'Mzk-');
 
     // 🔙 Back button
     document.getElementById('backbtn').addEventListener('click', function() {
@@ -240,64 +159,62 @@
       loadOrders();
     });
 
-    // Function to generate demo orders
-    function generateDemoOrders(count) {
-      const paymentStatuses = ['paid', 'to-pay', 'unknown'];
-      const consigners = ['ABC Suppliers', 'XYZ Corporation', 'Global Traders', 'Prime Logistics', 'Quick Ship'];
-      const consignees = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'David Brown', 'Emma Davis'];
-      const stops = ['Stop A', 'Stop B', 'Stop C', 'Stop D', 'Stop E', 'Stop F'];
-      const routes = ['Route 1', 'Route 2', 'Route 3', 'Route 4', 'Route 5'];
-      
-      const orders = [];
-      const startDate = new Date('2024-01-01');
-      
-      for (let i = 1; i <= count; i++) {
-        const randomDays = Math.floor(Math.random() * 365);
-        const orderDate = new Date(startDate);
-        orderDate.setDate(orderDate.getDate() + randomDays);
-        
-        // Randomly decide if some fields should be empty
-        const hasStop = Math.random() > 0.3;
-        const hasRoute = Math.random() > 0.3;
-        
-        orders.push({
-          id: `ORD${String(i).padStart(5, '0')}`,
-          podNo: `POD${String(i).padStart(5, '0')}`,
-          consigner: consigners[Math.floor(Math.random() * consigners.length)],
-          consignee: consignees[Math.floor(Math.random() * consignees.length)],
-          stop: hasStop ? stops[Math.floor(Math.random() * stops.length)] : '',
-          route: hasRoute ? routes[Math.floor(Math.random() * routes.length)] : '',
-          date: orderDate.toISOString().split('T')[0],
-          paymentStatus: paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)]
-        });
-      }
-      
-      return orders;
-    }
-
-    // Function to load orders
+    // ============================
+    // API: loadOrders (POST + app_id header)
+    // ============================
     async function loadOrders() {
       try {
         showLoading(true);
+
+        const appId = localStorage.getItem('app_id');
+        if (!appId) {
+          throw new Error('App ID not found in localStorage. Please set app_id first.');
+        }
+
+        const response = await fetch('https://www.loginlogistics.in/main/driverapp/my-orders.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({'app_id': "Mzk-"})
+        });
         
-        // In real implementation, fetch from backend:
-        // const response = await fetch('get_orders.php');
-        // const data = await response.json();
-        // allOrders = data.orders || [];
+        console.log('Raw API Response Status:', response.status);
         
-        // For demo, use generated data
-        allOrders = demoOrders;
-        
-        // Calculate total pages
+        if (!response.ok) {
+          let text = await response.text().catch(() => '');
+          throw new Error(`HTTP error: ${response.status} ${response.statusText} ${text ? '- ' + text : ''}`);
+        }
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+          const text = await response.text();
+          console.warn('Server returned non-JSON response:', text);
+          throw new Error('Server returned non-JSON response.');
+        }
+
+        console.log('API Data received:', data);
+        allOrders = transformApiResponse(data);
+        console.log('Transformed orders:', allOrders);
+
+        // Debug info
+        console.log('=== DEBUG INFO ===');
+        console.log('Total orders from API:', allOrders.length);
+        console.log('Orders per page:', ORDERS_PER_PAGE);
+        console.log('Total pages:', Math.ceil(allOrders.length / ORDERS_PER_PAGE));
+        console.log('First few orders:', allOrders.slice(0, 3));
+
+        // DISPLAY THE DATA
         totalPages = Math.ceil(allOrders.length / ORDERS_PER_PAGE);
-        
         if (allOrders.length === 0) {
           showNoOrdersMessage();
         } else {
           renderCurrentPage();
           updatePagination();
         }
-        
+
       } catch (error) {
         console.error('Error loading orders:', error);
         alert('Error loading orders: ' + error.message);
@@ -307,7 +224,66 @@
       }
     }
 
-    // Function to render current page
+    // ============================
+    // DATA TRANSFORMATION
+    // ============================
+    function transformApiResponse(apiData) {
+      if (!apiData) {
+        console.log('No API data received');
+        return [];
+      }
+
+      console.log('API Data for transformation:', apiData);
+
+      // Handle your exact JSON format: { "allOrders": [{...}, {...}] }
+      let list = null;
+      if (apiData.allOrders && Array.isArray(apiData.allOrders)) {
+        list = apiData.allOrders;
+      } else if (Array.isArray(apiData)) {
+        list = apiData;
+      } else if (Array.isArray(apiData.orders)) {
+        list = apiData.orders;
+      } else if (Array.isArray(apiData.data)) {
+        list = apiData.data;
+      }
+
+      if (!list) {
+        console.log('No orders list found. Available keys:', Object.keys(apiData));
+        return [];
+      }
+
+      console.log('Orders list found, count:', list.length);
+
+      // Transform each order using your exact field names
+      return list.map(order => {
+        console.log('Processing order:', order);
+        
+        // Determine payment status based on your exact fields
+        let paymentStatus = 'unknown';
+        if (order.topay === 'yes') {
+          paymentStatus = 'to-pay';
+        } else if (order.paid_order === 'yes') {
+          paymentStatus = 'paid';
+        } else if (order.topay === 'no' && order.paid_order === 'no') {
+          paymentStatus = 'to-pay';
+        }
+
+        return {
+          id: order.ord_id || '', // "NQ--"
+          podNo: order.pod_no || '', // "22810-212111112025202520252025/1"
+          consigner: order.consignor || '', // "Green Dent"
+          consignee: order.consignee || '', // "Dr Bipin Ashokan"
+          stop: order.stop || '', // "Ayikkarapadi"
+          route: order.route || '', // "CALICUT"
+          date: order.add_date || '', // "21/11/2025"
+          paymentStatus: paymentStatus
+        };
+      });
+    }
+
+    // ============================
+    // Render / Pagination
+    // ============================
     function renderCurrentPage() {
       const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
       const endIndex = startIndex + ORDERS_PER_PAGE;
@@ -323,30 +299,26 @@
         const paymentStatusClass = getPaymentStatusClass(order.paymentStatus);
         const paymentStatusText = getPaymentStatusText(order.paymentStatus);
         const globalIndex = (currentPage - 1) * ORDERS_PER_PAGE + index;
-        
+
         html += `
           <div class="card shadow-sm mb-3">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0">Order No: <strong>#${order.id}</strong></h6>
-                <span class="payment-status ${paymentStatusClass}">${paymentStatusText}</span>
+                <h6 class="mb-0">POD No: <strong>#${escapeHtml(order.podNo)}</strong></h6>
+                <span class="payment-status ${paymentStatusClass}">${escapeHtml(paymentStatusText)}</span>
               </div>
 
-              ${order.podNo ? `<p><strong>POD No:</strong> ${order.podNo}</p>` : ''}
-              ${order.consigner ? `<p><strong>Consigner:</strong> ${order.consigner}</p>` : ''}
-              ${order.consignee ? `<p><strong>Consignee:</strong> ${order.consignee}</p>` : ''}
-              ${order.stop ? `<p><strong>Stop:</strong> ${order.stop}</p>` : ''}
-              ${order.route ? `<p><strong>Route:</strong> ${order.route}</p>` : ''}
+              ${order.consigner ? `<p><strong>Consigner:</strong> ${escapeHtml(order.consigner)}</p>` : ''}
+              ${order.consignee ? `<p><strong>Consignee:</strong> ${escapeHtml(order.consignee)}</p>` : ''}
+              ${order.stop ? `<p><strong>Stop:</strong> ${escapeHtml(order.stop)}</p>` : ''}
+              ${order.route ? `<p><strong>Route:</strong> ${escapeHtml(order.route)}</p>` : ''}
 
               <div class="btn-group mt-2">
-                <button class="btn btn-primary btn-sm btn-view" onclick="viewOrderDetails('${order.id}')">
+                <button class="btn btn-primary btn-sm btn-view" onclick="viewOrderDetails('${encodeURIComponent(order.id)}')">
                   <i class="fa-solid fa-eye"></i> View
                 </button>
-                <button class="btn btn-warning btn-sm btn-edit" data-index="${globalIndex}">
+                <button class="btn btn-warning btn-sm btn-edit" onclick="editOrder('${encodeURIComponent(order.id)}')">
                   <i class="fa-solid fa-pencil"></i> Edit
-                </button>
-                <button class="btn btn-danger btn-sm btn-delete" data-index="${globalIndex}">
-                  <i class="fa-solid fa-trash"></i> Delete
                 </button>
               </div>
 
@@ -357,12 +329,10 @@
           </div>
         `;
       });
-      
+
       orderList.innerHTML = html;
-      attachEventListeners();
     }
 
-    // Function to go to previous page
     function goToPreviousPage() {
       if (currentPage > 1) {
         currentPage--;
@@ -372,7 +342,6 @@
       }
     }
 
-    // Function to go to next page
     function goToNextPage() {
       if (currentPage < totalPages) {
         currentPage++;
@@ -382,120 +351,131 @@
       }
     }
 
-    // Function to update pagination info and buttons
     function updatePagination() {
       const startOrder = (currentPage - 1) * ORDERS_PER_PAGE + 1;
       const endOrder = Math.min(currentPage * ORDERS_PER_PAGE, allOrders.length);
-      
+
       pageInfo.innerHTML = `
-        Page ${currentPage} of ${totalPages}<br>
-        <small class="text-muted">Showing orders ${startOrder}-${endOrder} of ${allOrders.length}</small>
+        <strong>Page ${currentPage} of ${totalPages}</strong>
+        <div class="orders-count">Showing orders ${startOrder}-${endOrder} of ${allOrders.length} total orders</div>
       `;
-      
-      // Update button states
+
       prevBtn.disabled = currentPage === 1;
       nextBtn.disabled = currentPage === totalPages;
-      
-      // Show pagination if there are multiple pages
+
+      // Show pagination only if there are multiple pages
       paginationContainer.style.display = totalPages > 1 ? 'flex' : 'none';
     }
 
-    // Function to scroll to top
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Function to view order details
     function viewOrderDetails(orderId) {
       window.location.href = `view.html?orderId=${orderId}`;
     }
 
-    // Function to attach event listeners to buttons
-    function attachEventListeners() {
-      // Delete buttons
-      document.querySelectorAll(".btn-delete").forEach(btn => {
-        btn.addEventListener("click", e => {
-          const index = parseInt(e.target.closest("button").dataset.index);
-          orderToDelete = allOrders[index];
-          document.getElementById("deleteReason").value = "";
-          deleteModal.show();
-        });
-      });
-
-      // Edit buttons
-      document.querySelectorAll(".btn-edit").forEach(btn => {
-        btn.addEventListener("click", e => {
-          const index = parseInt(e.target.closest("button").dataset.index);
-          orderToEdit = allOrders[index];
-          document.getElementById("editOrderId").value = orderToEdit.id;
-          document.getElementById("editConsigner").value = orderToEdit.consigner || '';
-          document.getElementById("editConsignee").value = orderToEdit.consignee || '';
-          document.getElementById("editStop").value = orderToEdit.stop || '';
-          document.getElementById("editRoute").value = orderToEdit.route || '';
-          document.getElementById("editDate").value = formatDateForInput(orderToEdit.date);
-          document.getElementById("editPaymentStatus").value = orderToEdit.paymentStatus || 'unknown';
-          editModal.show();
-        });
-      });
+    // ============================
+    // Edit Order - Redirect to order_edit.html
+    // ============================
+    function editOrder(orderId) {
+      // Redirect to order_edit.html with the order ID as parameter
+      window.location.href = `order_edit.html?orderId=${orderId}`;
     }
 
-    // Function to get payment status class
+    // ============================
+    // Payment status helpers
+    // ============================
     function getPaymentStatusClass(status) {
       if (!status) return "payment-unknown";
-      
-      switch (status) {
+      switch (status.toString().toLowerCase()) {
         case "paid":
           return "payment-paid";
         case "to-pay":
+        case "topay":
+        case "to pay":
           return "payment-to-pay";
         default:
           return "payment-unknown";
       }
     }
 
-    // Function to get payment status text
     function getPaymentStatusText(status) {
       if (!status) return "Unknown";
-      
-      switch (status) {
+      switch (status.toString().toLowerCase()) {
         case "paid":
           return "Paid";
         case "to-pay":
+        case "topay":
+        case "to pay":
           return "To Pay";
         default:
           return "Unknown";
       }
     }
 
-    // Function to format date
+    // ============================
+    // Date helpers - FIXED VERSION
+    // ============================
     function formatDate(dateString) {
       if (!dateString) return 'N/A';
-      
       try {
+        // Handle DD/MM/YYYY format from your API
+        if (dateString.includes('/')) {
+          const parts = dateString.split('/');
+          if (parts.length === 3) {
+            const date = new Date(parts[2], parts[1] - 1, parts[0]);
+            if (!isNaN(date.getTime())) {
+              return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              });
+            }
+          }
+        }
+        
+        // Try standard date parsing
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        });
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+        }
+        
+        return dateString;
       } catch (e) {
         return dateString;
       }
     }
 
-    // Function to format date for input field
     function formatDateForInput(dateString) {
       if (!dateString) return '';
-      
       try {
+        // Handle DD/MM/YYYY format from your API
+        if (dateString.includes('/')) {
+          const parts = dateString.split('/');
+          if (parts.length === 3) {
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          }
+        }
+        
         const date = new Date(dateString);
-        return date.toISOString().split('T')[0];
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().split('T')[0];
+        }
+        
+        return '';
       } catch (e) {
         return '';
       }
     }
 
-    // Function to show/hide loading spinner
+    // ============================
+    // Show / hide loading & empty
+    // ============================
     function showLoading(show) {
       isLoading = show;
       loadingSpinner.style.display = show ? 'block' : 'none';
@@ -503,87 +483,11 @@
       nextBtn.disabled = show;
     }
 
-    // Function to show no orders message
     function showNoOrdersMessage() {
       noOrdersMessage.style.display = 'block';
       paginationContainer.style.display = 'none';
       orderList.innerHTML = '';
     }
-
-    // ✅ Confirm delete
-    document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
-      const reason = document.getElementById("deleteReason").value.trim();
-      if (!reason) return alert("Please provide a reason.");
-
-      try {
-        // In real implementation, send delete request to backend
-        // await fetch('delete_order.php', { method: 'POST', body: JSON.stringify({ orderId: orderToDelete.id, reason }) });
-        
-        // For demo, remove from local array
-        allOrders = allOrders.filter(order => order.id !== orderToDelete.id);
-        totalPages = Math.ceil(allOrders.length / ORDERS_PER_PAGE);
-        
-        // Adjust current page if needed
-        if (currentPage > totalPages && totalPages > 0) {
-          currentPage = totalPages;
-        }
-        
-        if (allOrders.length === 0) {
-          showNoOrdersMessage();
-        } else {
-          renderCurrentPage();
-          updatePagination();
-        }
-        
-        deleteModal.hide();
-        alert("Order deleted successfully.");
-      } catch (error) {
-        console.error('Error deleting order:', error);
-        alert('Error deleting order: ' + error.message);
-      }
-    });
-
-    // ✅ Save edit
-    document.getElementById("saveEditBtn").addEventListener("click", async () => {
-      const newId = document.getElementById("editOrderId").value.trim();
-      const newConsigner = document.getElementById("editConsigner").value.trim();
-      const newConsignee = document.getElementById("editConsignee").value.trim();
-      const newStop = document.getElementById("editStop").value.trim();
-      const newRoute = document.getElementById("editRoute").value.trim();
-      const newDate = document.getElementById("editDate").value;
-      const newPaymentStatus = document.getElementById("editPaymentStatus").value;
-
-      if (!newId || !newConsigner || !newConsignee || !newDate) {
-        return alert("Order ID, Consigner, Consignee, and Date are required fields.");
-      }
-
-      try {
-        // In real implementation, send update request to backend
-        // await fetch('update_order.php', { method: 'POST', body: JSON.stringify({ orderId: orderToEdit.id, updates: { id: newId, consigner: newConsigner, consignee: newConsignee, stop: newStop, route: newRoute, date: newDate, paymentStatus: newPaymentStatus } }) });
-        
-        // For demo, update local array
-        const orderIndex = allOrders.findIndex(order => order.id === orderToEdit.id);
-        if (orderIndex !== -1) {
-          allOrders[orderIndex] = {
-            ...allOrders[orderIndex],
-            id: newId,
-            consigner: newConsigner,
-            consignee: newConsignee,
-            stop: newStop,
-            route: newRoute,
-            date: newDate,
-            paymentStatus: newPaymentStatus
-          };
-        }
-        
-        renderCurrentPage();
-        editModal.hide();
-        alert("Order updated successfully.");
-      } catch (error) {
-        console.error('Error updating order:', error);
-        alert('Error updating order: ' + error.message);
-      }
-    });
 
     // Keyboard navigation
     document.addEventListener('keydown', function(e) {
@@ -593,6 +497,19 @@
         goToNextPage();
       }
     });
+
+    // ============================
+    // small helpers
+    // ============================
+    function escapeHtml(unsafe) {
+      if (unsafe === null || unsafe === undefined) return '';
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
   </script>
 </body>
 </html>

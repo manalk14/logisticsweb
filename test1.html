@@ -1,1094 +1,743 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>New Order - Multi Step Tabs</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View Orders</title>
 
-  <!-- Bootstrap CSS -->
+  <!-- ✅ Bootstrap CSS -->
   <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
-  <!-- Font Awesome -->
+
+  <!-- ✅ FontAwesome -->
   <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
-  <link href="css/new-order.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/view_order.css" />
 
   <style>
-    .disabled-btn { opacity: 0.5; pointer-events: none; }
-    .is-invalid-field { border-color: #dc3545; }
-    .error-message { display:none; color:#dc3545; font-size:.875rem; margin-top:.25rem; }
-    .payment-box { border:1px solid #ddd; border-radius:.75rem; padding:1rem; cursor:pointer; transition:.2s; }
-    .payment-box:hover { background:#f9f9f9; }
-    .payment-box.active { border-color:#0d6efd; box-shadow:0 0 0 .2rem rgba(13,110,253,.15); background:#e7f1ff; }
-    .fixed-bottom-bar { position:sticky; bottom:0; background:#fff; border-top:1px solid #eee; padding:.75rem; }
-    .section-title { font-weight:600; }
-    .autocomplete-wrapper { position: relative; }
-    .autocomplete-items {
-      position: absolute;
-      border: 1px solid #ddd;
-      border-top: none;
-      z-index: 9999;
-      background: white;
-      width: 100%;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    .autocomplete-item {
-      padding: 8px 12px;
-      cursor: pointer;
-      border-bottom: 1px solid #f1f1f1;
-    }
-    .autocomplete-item:hover, .autocomplete-item.active {
-      background: #f1f1f1;
-    }
-    .no-results {
-      padding: 8px 12px;
-      color: #6c757d;
-      font-style: italic;
+    .loading-spinner {
+      display: none;
       text-align: center;
+      padding: 20px;
+    }
+    .no-orders {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+    }
+    .pagination-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    .page-info {
+      font-weight: 500;
+      color: #495057;
+      text-align: center;
+    }
+    .pagination-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .payment-status {
+      font-weight: 500;
+    }
+    .payment-paid {
+      color: #28a745;
+    }
+    .payment-to-pay {
+      color: #dc3545;
+    }
+    .payment-unknown {
+      color: #6c757d;
+    }
+    .card-body p {
+      margin-bottom: 0.4rem;
+    }
+    .orders-count {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+    .main-content {
+      margin-bottom: 100px; /* Space for fixed pagination */
     }
   </style>
 </head>
+
 <body>
+  <!-- ✅ Header Section -->
+  <div class="header bg-orange shadow-sm">
+    <div class="d-flex align-items-center p-3">
+      <button id="backbtn" class="btn btn-link text-dark">
+        <i class="fa-solid fa-arrow-left fa-lg"></i>
+      </button>
+      <h5 class="mb-0 fw-bold">View Orders</h5>
+    </div>
+  </div>
 
-<div class="container-fluid p-0">
+  <!-- ✅ Main Content -->
+  <main class="container mt-3 mb-5 main-content">
+    <!-- Orders List -->
+    <div id="orderList"></div>
 
-  <!-- Header -->
-  <header class="p-3 bg-warning fw-bold text-dark d-flex align-items-center">
-    &nbsp;&nbsp;&nbsp;<i class="fa-sharp fa-solid fa-arrow-left" id="backButton" style="cursor: pointer;"></i>
-    &nbsp;<span class="mb-0 fw-bold">New Customer Order</span>
-  </header>
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading orders...</p>
+    </div>
 
-  <!-- Tabs -->
-  <ul class="nav nav-tabs mt-3 mx-3" id="orderTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="tab1-btn" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">Consignor</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link disabled" id="tab2-btn" type="button" role="tab">Consignee</button>
-    </li>
-  </ul>
+    <!-- No Orders Message -->
+    <div class="no-orders" id="noOrdersMessage" style="display: none;">
+      <i class="fa-solid fa-box-open fa-3x mb-3"></i>
+      <h5>No Orders Found</h5>
+      <p>There are no orders to display at the moment.</p>
+    </div>
+  </main>
 
-  <!-- Tab Contents -->
-  <div class="tab-content p-3">
+  <!-- Pagination Footer -->
+  <div class="pagination-container" id="paginationContainer" style="display: none;">
+    <div class="pagination-buttons">
+      <button class="btn btn-outline-primary" id="prevBtn">
+        <i class="fa-solid fa-chevron-left me-1"></i> Previous
+      </button>
+    </div>
 
-    <!-- TAB 1 — CONSIGNOR -->
-    <div class="tab-pane fade show active" id="tab1" role="tabpanel">
-      <div class="tab-card">
-        <h5 class="fw-bold mb-3"><i class="fa-solid fa-user"></i> Consignor Details</h5>
+    <div class="page-info" id="pageInfo"></div>
 
-        <form id="consignorForm" novalidate>
+    <div class="pagination-buttons">
+      <button class="btn btn-outline-primary" id="nextBtn">
+        Next <i class="fa-solid fa-chevron-right ms-1"></i>
+      </button>
+    </div>
+  </div>
 
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">POD No *</label>
-              <input type="text" id="podNo" class="form-control required-field" />
-              <div class="error-message">Please enter POD No</div>
+  <!-- 🗑 Delete Reason Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Reason for Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <textarea id="deleteReason" class="form-control" rows="3" placeholder="Enter reason..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ Edit Order Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm">
+            <div class="mb-3">
+              <label class="form-label">POD Number</label>
+              <input type="text" class="form-control" id="editPodNo" required>
             </div>
-
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Supplier Invoice *</label>
-              <input type="text" id="supplierInvoice" class="form-control required-field" />
-              <div class="error-message">Please enter supplier invoice</div>
+            <div class="mb-3">
+              <label class="form-label">Consigner</label>
+              <input type="text" class="form-control" id="editConsigner" required>
             </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3 autocomplete-wrapper">
-              <label class="form-label">Company Name *</label>
-              <input type="text" id="companyName" class="form-control required-field autocomplete-input" autocomplete="off" />
-              <div class="error-message">Please enter company name</div>
+            <div class="mb-3">
+              <label class="form-label">Consignee</label>
+              <input type="text" class="form-control" id="editConsignee" required>
             </div>
-
-            <div class="col-md-6 mb-3 autocomplete-wrapper">
-              <label class="form-label">City *</label>
-              <input type="text" id="city" class="form-control required-field autocomplete-input" autocomplete="off" />
-              <div class="error-message">Please enter city</div>
+            <div class="mb-3">
+              <label class="form-label">Stop</label>
+              <input type="text" class="form-control" id="editStop">
             </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Address *</label>
-            <textarea id="address" class="form-control required-field" rows="2"></textarea>
-            <div class="error-message">Please enter address</div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Phone *</label>
-              <input type="tel" id="phone" class="form-control required-field" pattern="[0-9]{10}" />
-              <div class="error-message">Enter 10-digit phone</div>
+            <div class="mb-3">
+              <label class="form-label">Route</label>
+              <input type="text" class="form-control" id="editRoute">
             </div>
-
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Courier Status *</label>
-              <select id="courierStatus" class="form-select required-field">
-                <option value="" disabled selected hidden>-- Select status --</option>
-                <option value="pending">Pending</option>
-                <option value="in-transit">In-Transit</option>
-                <option value="delivered">Delivered</option>
+            <div class="mb-3">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-control" id="editDate" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Payment Status</label>
+              <select class="form-control" id="editPaymentStatus">
+                <option value="paid">Paid</option>
+                <option value="to-pay">To Pay</option>
+                <option value="unknown">Unknown</option>
               </select>
-              <div class="error-message">Please select courier status</div>
             </div>
-          </div>
-
-        </form>
-      </div>
-    </div>
-
-    <!-- TAB 2 — CONSIGNEE -->
-    <div class="tab-pane fade" id="tab2" role="tabpanel">
-      <div class="tab-card">
-        <h5 class="fw-bold mb-3"><i class="fa-solid fa-user"></i> Consignee Details</h5>
-
-        <form id="consigneeForm" novalidate>
-          <div class="row">
-            <div class="col-md-6 mb-3 autocomplete-wrapper">
-              <label class="form-label">Consignee Name *</label>
-              <input type="text" id="cName" class="form-control required-field2 autocomplete-input" autocomplete="off" />
-              <div class="error-message">Required</div>
-            </div>
-            <div class="col-md-6 mb-3 autocomplete-wrapper">
-              <label class="form-label">City *</label>
-              <input type="text" id="cCity" class="form-control required-field2 autocomplete-input" autocomplete="off" />
-              <div class="error-message">Required</div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Route *</label>
-              <input type="text" id="cRoute" class="form-control required-field2" placeholder="Select city first to load routes" />
-              <div class="error-message">Required</div>
-            </div>
-            <div class="col-md-6 mb-3">
-             <label class="form-label">Phone *</label>
-            <input type="tel" id="cPhone" class="form-control required-field2" pattern="[0-9]{10}" />
-            <div class="error-message">Enter 10-digit phone</div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Address *</label>
-            <textarea id="cAddress" class="form-control required-field2" rows="2"></textarea>
-            <div class="error-message">Required</div>
-          </div>
-
-          <!-- PAYMENT -->
-          <div class="card mb-4">
-            <div class="card-header bg-light fw-bold"><i class="fa-solid fa-credit-card"></i> Payment Type</div>
-            <div class="card-body text-center">
-              <div class="row g-3">
-                <div class="col-4">
-                  <div class="payment-box" id="noneBox" onclick="selectPayment('none')">
-                    <i class="fa-solid fa-ban fa-2x"></i>
-                    <div>None</div>
-                  </div>
-                </div>
-                <div class="col-4">
-                  <div class="payment-box" id="toPayBox" onclick="selectPayment('toPay')">
-                    <i class="fa-solid fa-money-bill-wave fa-2x"></i>
-                    <div>To Pay</div>
-                  </div>
-                </div>
-                <div class="col-4">
-                  <div class="payment-box" id="paidOrderBox" onclick="selectPayment('paidOrder')">
-                    <i class="fa-solid fa-circle-check fa-2x"></i>
-                    <div>Paid Order</div>
-                  </div>
-                </div>
-              </div>
-              <div class="error-message" id="paymentError">Please select a payment type.</div>
-            </div>
-          </div>
-
-          <!-- BOX AND COVER -->
-          <div class="card mb-4">
-            <div class="card-body">
-              <div class="section-title mb-3"><i class="fa-solid fa-box"></i> Packaging Details</div>
-              <div class="row g-3">
-                <!-- Box -->
-                <div class="col-md-6">
-                  <div class="card h-100">
-                    <div class="section-title p-3"><i class="fa-solid fa-cube"></i> Box</div>
-                    <div class="card-body" id="boxSection">
-                      <div class="row align-items-center mb-2" >
-                        <div class="col-4 fw-bold">Small</div>
-                        <div class="col-4"><input type="number" class="form-control box-qty" data-size="small" placeholder="Qty" min="0"></div>
-                        <div class="col-4"><input type="number" class="form-control box-price" data-size="small" placeholder="Price" min="0"></div>
-                      </div>
-                      <div class="row align-items-center mb-2">
-                        <div class="col-4 fw-bold">Medium</div>
-                        <div class="col-4"><input type="number" class="form-control box-qty" data-size="medium" placeholder="Qty" min="0"></div>
-                        <div class="col-4"><input type="number" class="form-control box-price" data-size="medium" placeholder="Price" min="0"></div>
-                      </div>
-                      <div class="row align-items-center">
-                        <div class="col-4 fw-bold">Large</div>
-                        <div class="col-4"><input type="number" class="form-control box-qty" data-size="large" placeholder="Qty" min="0"></div>
-                        <div class="col-4"><input type="number" class="form-control box-price" data-size="large" placeholder="Price" min="0"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Cover -->
-                <div class="col-md-6">
-                  <div class="card h-100">
-                    <div class="section-title p-3"><i class="fa-solid fa-envelope"></i> Cover</div>
-                    <div class="card-body" id="coverSection">
-                      <div class="row align-items-center mb-2">
-                        <div class="col-4 fw-bold">Small</div>
-                        <div class="col-4"><input type="number" class="form-control cover-qty" data-size="small" placeholder="Qty" min="0"></div>
-                        <div class="col-4"><input type="number" class="form-control cover-price" data-size="small" placeholder="Price" min="0"></div>
-                      </div>
-                      <div class="row align-items-center mb-2">
-                        <div class="col-4 fw-bold">Medium</div>
-                        <div class="col-4"><input type="number" class="form-control cover-qty" data-size="medium" placeholder="Qty" min="0"></div>
-                        <div class="col-4"><input type="number" class="form-control cover-price" data-size="medium" placeholder="Price" min="0"></div>
-                      </div>
-                      <div class="row align-items-center">
-                        <div class="col-4 fw-bold">Large</div>
-                        <div class="col-4"><input type="number" class="form-control cover-qty" data-size="large" placeholder="Qty" min="0"></div>
-                        <div class="col-4"><input type="number" class="form-control cover-price" data-size="large" placeholder="Price" min="0"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="error-message mt-3" id="boxCoverError">Please enter at least one Box AND one Cover with quantity and price.</div>
-            </div>
-          </div>
-
-        </form>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Footer (Back left; Next+Save right) -->
-  <div class="fixed-bottom-bar d-flex justify-content-center align-items-center px-3">
-    <!-- Back (hidden on tab1) -->
-    <button class="btn btn-secondary d-none" id="backTab">Back</button>
+  <!-- ✅ Bootstrap JS -->
+  <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Right side -->
-    <div class="footer-right ms-auto">
-      <button class="btn btn-warning" id="nextTab">Next</button>
-      <button class="btn btn-success d-none" id="saveAll">Save</button>
-    </div>
-  </div>
+  <script>
+    // Configuration - 15 ORDERS PER PAGE
+    const ORDERS_PER_PAGE = 15;
+    let currentPage = 1;
+    let totalPages = 0;
+    let allOrders = [];
+    let isLoading = false;
 
-<!-- Scripts -->
-<script src="../jquery-3.6.0.min.js"></script>
-<script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+    // DOM Elements
+    const orderList = document.getElementById("orderList");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+    const paginationContainer = document.getElementById("paginationContainer");
+    const pageInfo = document.getElementById("pageInfo");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const noOrdersMessage = document.getElementById("noOrdersMessage");
+    const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+    const editModal = new bootstrap.Modal(document.getElementById("editModal"));
 
-<script>
+    let orderToDelete = null;
+    let orderToEdit = null;
 
-/* -------------------------
-   State
--------------------------*/
-let consignees = [];
-let selectedPayment = null;
+    // Set app_id
+    localStorage.setItem('app_id', 'Mzk-');
 
-// API Configuration
-const BASE_URL = "https://www.loginlogistics.in/main/driverapp/";
-const API_ENDPOINTS = {
-  city: "get_city.php",
-  consignee: "get_consignee.php",
-  route: "get_routes.php",
-  consigner: "get_consigner.php"
-};
+    // 🔙 Back button
+    document.getElementById('backbtn').addEventListener('click', function() {
+      window.location.href = 'index.html';
+    });
 
-/* DOM */
-const tab1Btn = document.getElementById('tab1-btn');
-const tab2Btn = document.getElementById('tab2-btn');
-const nextBtn = document.getElementById('nextTab');
-const backBtn = document.getElementById('backTab');
-const saveBtn = document.getElementById('saveAll');
+    // Navigation buttons
+    prevBtn.addEventListener('click', goToPreviousPage);
+    nextBtn.addEventListener('click', goToNextPage);
 
-/* Header back */
-document.getElementById('backButton').addEventListener('click', () => {
-  window.location.href = 'index.html';
-});
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadOrders();
+    });
 
-/* -------------------------
-   Autocomplete Functionality with Keyboard Navigation
--------------------------*/
-function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, onSelectCallback = null) {
-  const input = document.getElementById(inputId);
-  const wrapper = input.parentElement;
-  let currentList;
-  let currentFocus = -1;
+    // ============================
+    // API: loadOrders (POST + app_id header)
+    // ============================
+    async function loadOrders() {
+      try {
+        showLoading(true);
 
-  function removeCurrentList() {
-    if (currentList) {
-      currentList.remove();
-      currentList = null;
-      currentFocus = -1;
+        const appId = localStorage.getItem('app_id');
+        if (!appId) {
+          throw new Error('App ID not found in localStorage. Please set app_id first.');
+        }
+
+        const response = await fetch('https://www.loginlogistics.in/main/driverapp/my-orders.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({'app_id': "Mzk-"})
+        });
+        
+        console.log('Raw API Response Status:', response.status);
+        
+        if (!response.ok) {
+          let text = await response.text().catch(() => '');
+          throw new Error(`HTTP error: ${response.status} ${response.statusText} ${text ? '- ' + text : ''}`);
+        }
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+          const text = await response.text();
+          console.warn('Server returned non-JSON response:', text);
+          throw new Error('Server returned non-JSON response.');
+        }
+
+        console.log('API Data received:', data);
+        allOrders = transformApiResponse(data);
+        console.log('Transformed orders:', allOrders);
+
+        // Debug info
+        console.log('=== DEBUG INFO ===');
+        console.log('Total orders from API:', allOrders.length);
+        console.log('Orders per page:', ORDERS_PER_PAGE);
+        console.log('Total pages:', Math.ceil(allOrders.length / ORDERS_PER_PAGE));
+        console.log('First few orders:', allOrders.slice(0, 3));
+
+        // DISPLAY THE DATA
+        totalPages = Math.ceil(allOrders.length / ORDERS_PER_PAGE);
+        if (allOrders.length === 0) {
+          showNoOrdersMessage();
+        } else {
+          renderCurrentPage();
+          updatePagination();
+        }
+
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        alert('Error loading orders: ' + error.message);
+        showNoOrdersMessage();
+      } finally {
+        showLoading(false);
+      }
     }
-  }
 
-  function setActive(items, direction) {
-    if (!items) return;
-    
-    removeActive(items);
-    
-    if (direction === 'down') {
-      currentFocus++;
-      if (currentFocus >= items.length) currentFocus = 0;
-    } else if (direction === 'up') {
-      currentFocus--;
-      if (currentFocus < 0) currentFocus = items.length - 1;
+    // ============================
+    // DATA TRANSFORMATION
+    // ============================
+    function transformApiResponse(apiData) {
+      if (!apiData) {
+        console.log('No API data received');
+        return [];
+      }
+
+      console.log('API Data for transformation:', apiData);
+
+      // Handle your exact JSON format: { "allOrders": [{...}, {...}] }
+      let list = null;
+      if (apiData.allOrders && Array.isArray(apiData.allOrders)) {
+        list = apiData.allOrders;
+      } else if (Array.isArray(apiData)) {
+        list = apiData;
+      } else if (Array.isArray(apiData.orders)) {
+        list = apiData.orders;
+      } else if (Array.isArray(apiData.data)) {
+        list = apiData.data;
+      }
+
+      if (!list) {
+        console.log('No orders list found. Available keys:', Object.keys(apiData));
+        return [];
+      }
+
+      console.log('Orders list found, count:', list.length);
+
+      // Transform each order using your exact field names
+      return list.map(order => {
+        console.log('Processing order:', order);
+        
+        // Determine payment status based on your exact fields
+        let paymentStatus = 'unknown';
+        if (order.topay === 'yes') {
+          paymentStatus = 'to-pay';
+        } else if (order.paid_order === 'yes') {
+          paymentStatus = 'paid';
+        } else if (order.topay === 'no' && order.paid_order === 'no') {
+          paymentStatus = 'to-pay';
+        }
+
+        return {
+          id: order.ord_id || '', // "NQ--"
+          podNo: order.pod_no || '', // "22810-212111112025202520252025/1"
+          consigner: order.consignor || '', // "Green Dent"
+          consignee: order.consignee || '', // "Dr Bipin Ashokan"
+          stop: order.stop || '', // "Ayikkarapadi"
+          route: order.route || '', // "CALICUT"
+          date: order.add_date || '', // "21/11/2025"
+          paymentStatus: paymentStatus
+        };
+      });
     }
-    
-    if (currentFocus >= 0 && currentFocus < items.length) {
-      items[currentFocus].classList.add('active');
-      items[currentFocus].scrollIntoView({ block: 'nearest' });
-    }
-  }
 
-  function removeActive(items) {
-    items.forEach(item => item.classList.remove('active'));
-  }
+    // ============================
+    // Render / Pagination
+    // ============================
+    function renderCurrentPage() {
+      const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
+      const endIndex = startIndex + ORDERS_PER_PAGE;
+      const currentOrders = allOrders.slice(startIndex, endIndex);
 
-  function selectActiveItem(items) {
-    if (currentFocus > -1 && items && items[currentFocus]) {
-      items[currentFocus].click();
-    }
-  }
-
-  input.addEventListener("input", function () {
-    const val = this.value.trim().toLowerCase();
-    removeCurrentList();
-    if (!val) return;
-
-    const body = {
-      app_id: localStorage.getItem("app_id") || "Mzk-",
-      search: val,
-      term: val
-    };
-
-    fetch(BASE_URL + endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    })
-    .then(r => {
-      return r.json();
-    })
-    .then(data => {
-      let arr = data[listKey] || [];
-      currentList = document.createElement("div");
-      currentList.className = "autocomplete-items";
-      wrapper.appendChild(currentList);
-
-      if (arr.length === 0) {
-        const noResults = document.createElement("div");
-        noResults.className = "no-results";
-        noResults.textContent = "No results found";
-        currentList.appendChild(noResults);
+      if (currentOrders.length === 0) {
+        orderList.innerHTML = '<div class="no-orders">No orders on this page</div>';
         return;
       }
 
-      arr.forEach(item => {
-        const text = item[displayKey] || "";
-        const id = item[valueKey] || "";
+      let html = '';
+      currentOrders.forEach((order, index) => {
+        const paymentStatusClass = getPaymentStatusClass(order.paymentStatus);
+        const paymentStatusText = getPaymentStatusText(order.paymentStatus);
+        const globalIndex = (currentPage - 1) * ORDERS_PER_PAGE + index;
 
-        if (text.toLowerCase().includes(val)) {
-          const div = document.createElement("div");
-          div.className = "autocomplete-item";
-          div.textContent = text;
+        html += `
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">POD No: <strong>#${escapeHtml(order.podNo)}</strong></h6>
+                <span class="payment-status ${paymentStatusClass}">${escapeHtml(paymentStatusText)}</span>
+              </div>
 
-          div.onclick = () => {
-            input.value = text;
-            input.dataset.selectedId = id;
+              ${order.consigner ? `<p><strong>Consigner:</strong> ${escapeHtml(order.consigner)}</p>` : ''}
+              ${order.consignee ? `<p><strong>Consignee:</strong> ${escapeHtml(order.consignee)}</p>` : ''}
+              ${order.stop ? `<p><strong>Stop:</strong> ${escapeHtml(order.stop)}</p>` : ''}
+              ${order.route ? `<p><strong>Route:</strong> ${escapeHtml(order.route)}</p>` : ''}
 
-            if (item.destination) input.dataset.destination = item.destination;
-            if (item.destinationid) input.dataset.destinationid = item.destinationid;
-            if (item.dst_address) input.dataset.dst_address = item.dst_address;
-            if (item.dst_phone_number) input.dataset.dst_phone_number = item.dst_phone_number;
+              <div class="btn-group mt-2">
+                <button class="btn btn-primary btn-sm btn-view" onclick="viewOrderDetails('${encodeURIComponent(order.id)}')">
+                  <i class="fa-solid fa-eye"></i> View
+                </button>
+                <button class="btn btn-warning btn-sm btn-edit" data-index="${globalIndex}">
+                  <i class="fa-solid fa-pencil"></i> Edit
+                </button>
+                <button class="btn btn-danger btn-sm btn-delete" data-index="${globalIndex}">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
 
-            if (onSelectCallback && typeof onSelectCallback === 'function') {
-              onSelectCallback(item);
-            }
-
-            removeCurrentList();
-          };
-
-          currentList.appendChild(div);
-        }
+              <div class="text-muted small mt-2">
+                <i class="fa-solid fa-calendar me-1"></i> ${formatDate(order.date)}
+              </div>
+            </div>
+          </div>
+        `;
       });
-    })
-    .catch(err => {
-      console.error('Error fetching data:', err);
+
+      orderList.innerHTML = html;
+      attachEventListeners();
+    }
+
+    function goToPreviousPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderCurrentPage();
+        updatePagination();
+        scrollToTop();
+      }
+    }
+
+    function goToNextPage() {
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderCurrentPage();
+        updatePagination();
+        scrollToTop();
+      }
+    }
+
+    function updatePagination() {
+      const startOrder = (currentPage - 1) * ORDERS_PER_PAGE + 1;
+      const endOrder = Math.min(currentPage * ORDERS_PER_PAGE, allOrders.length);
+
+      pageInfo.innerHTML = `
+        <strong>Page ${currentPage} of ${totalPages}</strong>
+        <div class="orders-count">Showing orders ${startOrder}-${endOrder} of ${allOrders.length} total orders</div>
+      `;
+
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+
+      // Show pagination only if there are multiple pages
+      paginationContainer.style.display = totalPages > 1 ? 'flex' : 'none';
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function viewOrderDetails(orderId) {
+      window.location.href = `view.html?orderId=${orderId}`;
+    }
+
+    // ============================
+    // Event listeners: Edit / Delete
+    // ============================
+    function attachEventListeners() {
+      // Delete buttons
+      document.querySelectorAll(".btn-delete").forEach(btn => {
+        btn.removeEventListener('click', onDeleteClick);
+        btn.addEventListener("click", onDeleteClick);
+      });
+
+      // Edit buttons
+      document.querySelectorAll(".btn-edit").forEach(btn => {
+        btn.removeEventListener('click', onEditClick);
+        btn.addEventListener("click", onEditClick);
+      });
+    }
+
+    function onDeleteClick(e) {
+      const index = parseInt(e.target.closest("button").dataset.index, 10);
+      orderToDelete = allOrders[index];
+      document.getElementById("deleteReason").value = "";
+      deleteModal.show();
+    }
+
+    function onEditClick(e) {
+      const index = parseInt(e.target.closest("button").dataset.index, 10);
+      orderToEdit = allOrders[index];
+      document.getElementById("editPodNo").value = orderToEdit.podNo || '';
+      document.getElementById("editConsigner").value = orderToEdit.consigner || '';
+      document.getElementById("editConsignee").value = orderToEdit.consignee || '';
+      document.getElementById("editStop").value = orderToEdit.stop || '';
+      document.getElementById("editRoute").value = orderToEdit.route || '';
+      document.getElementById("editDate").value = formatDateForInput(orderToEdit.date);
+      document.getElementById("editPaymentStatus").value = orderToEdit.paymentStatus || 'unknown';
+      editModal.show();
+    }
+
+    // ============================
+    // Payment status helpers
+    // ============================
+    function getPaymentStatusClass(status) {
+      if (!status) return "payment-unknown";
+      switch (status.toString().toLowerCase()) {
+        case "paid":
+          return "payment-paid";
+        case "to-pay":
+        case "topay":
+        case "to pay":
+          return "payment-to-pay";
+        default:
+          return "payment-unknown";
+      }
+    }
+
+    function getPaymentStatusText(status) {
+      if (!status) return "Unknown";
+      switch (status.toString().toLowerCase()) {
+        case "paid":
+          return "Paid";
+        case "to-pay":
+        case "topay":
+        case "to pay":
+          return "To Pay";
+        default:
+          return "Unknown";
+      }
+    }
+
+    // ============================
+    // Date helpers - FIXED VERSION
+    // ============================
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      try {
+        // Handle DD/MM/YYYY format from your API
+        if (dateString.includes('/')) {
+          const parts = dateString.split('/');
+          if (parts.length === 3) {
+            const date = new Date(parts[2], parts[1] - 1, parts[0]);
+            if (!isNaN(date.getTime())) {
+              return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              });
+            }
+          }
+        }
+        
+        // Try standard date parsing
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+        }
+        
+        return dateString;
+      } catch (e) {
+        return dateString;
+      }
+    }
+
+    function formatDateForInput(dateString) {
+      if (!dateString) return '';
+      try {
+        // Handle DD/MM/YYYY format from your API
+        if (dateString.includes('/')) {
+          const parts = dateString.split('/');
+          if (parts.length === 3) {
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          }
+        }
+        
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().split('T')[0];
+        }
+        
+        return '';
+      } catch (e) {
+        return '';
+      }
+    }
+
+    // ============================
+    // Show / hide loading & empty
+    // ============================
+    function showLoading(show) {
+      isLoading = show;
+      loadingSpinner.style.display = show ? 'block' : 'none';
+      prevBtn.disabled = show;
+      nextBtn.disabled = show;
+    }
+
+    function showNoOrdersMessage() {
+      noOrdersMessage.style.display = 'block';
+      paginationContainer.style.display = 'none';
+      orderList.innerHTML = '';
+    }
+
+    // ============================
+    // Confirm Delete (POST + app_id header)
+    // ============================
+    document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+      const reason = document.getElementById("deleteReason").value.trim();
+      if (!reason) return alert("Please provide a reason.");
+
+      try {
+        const appId = localStorage.getItem('app_id');
+        if (!appId) throw new Error('app_id missing in localStorage');
+
+        const response = await fetch('https://www.loginlogistics.in/main/driverapp/delete-order.php', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+            'app_id': "Mzk-"
+          },
+          body: JSON.stringify({
+            orderId: orderToDelete.id,
+            reason: reason
+          })
+        });
+
+        if (!response.ok) {
+          const text = await response.text().catch(() => '');
+          throw new Error(`HTTP error: ${response.status} ${text}`);
+        }
+
+        const result = await response.json().catch(() => null);
+        if (result && result.success === true) {
+          allOrders = allOrders.filter(order => order.id !== orderToDelete.id);
+          totalPages = Math.ceil(allOrders.length / ORDERS_PER_PAGE);
+          if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+          if (allOrders.length === 0) showNoOrdersMessage();
+          else {
+            renderCurrentPage();
+            updatePagination();
+          }
+          deleteModal.hide();
+          alert("Order deleted successfully.");
+        } else {
+          const msg = result && result.message ? result.message : 'Failed to delete order';
+          alert("Error deleting order: " + msg);
+        }
+      } catch (error) {
+        console.error('Error deleting order:', error);
+        alert('Error deleting order: ' + error.message);
+      }
     });
-  });
 
-  // Keyboard navigation
-  input.addEventListener("keydown", function(e) {
-    const items = currentList ? currentList.querySelectorAll('.autocomplete-item') : null;
-    
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (items && items.length > 0) {
-        setActive(items, 'down');
+    // ============================
+    // Save Edit (POST + app_id header)
+    // ============================
+    document.getElementById("saveEditBtn").addEventListener("click", async () => {
+      const newPodNo = document.getElementById("editPodNo").value.trim();
+      const newConsigner = document.getElementById("editConsigner").value.trim();
+      const newConsignee = document.getElementById("editConsignee").value.trim();
+      const newStop = document.getElementById("editStop").value.trim();
+      const newRoute = document.getElementById("editRoute").value.trim();
+      const newDate = document.getElementById("editDate").value;
+      const newPaymentStatus = document.getElementById("editPaymentStatus").value;
+
+      if (!newPodNo || !newConsigner || !newConsignee || !newDate) {
+        return alert("POD Number, Consigner, Consignee, and Date are required.");
       }
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (items && items.length > 0) {
-        setActive(items, 'up');
+
+      try {
+        const response = await fetch("https://www.loginlogistics.in/main/driverapp/update-order.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            app_id: "Mzk-",
+            orderId: orderToEdit.id,
+            updates: {
+              podNo: newPodNo,
+              consigner: newConsigner,
+              consignee: newConsignee,
+              stop: newStop,
+              route: newRoute,
+              date: newDate,
+              paymentStatus: newPaymentStatus
+            }
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          const index = allOrders.findIndex(order => order.id === orderToEdit.id);
+
+          if (index !== -1) {
+            allOrders[index] = {
+              ...allOrders[index],
+              podNo: newPodNo,
+              consigner: newConsigner,
+              consignee: newConsignee,
+              stop: newStop,
+              route: newRoute,
+              date: newDate,
+              paymentStatus: newPaymentStatus
+            };
+          }
+
+          renderCurrentPage();
+          editModal.hide();
+          alert("Order updated successfully!");
+        } else {
+          alert("Error updating order: " + result.message);
+        }
+
+      } catch (error) {
+        console.error("Error updating order:", error);
+        alert("Update error: " + error.message);
       }
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (items && items.length > 0) {
-        selectActiveItem(items);
-      }
-    } else if (e.key === 'Escape') {
-      removeCurrentList();
-    }
-  });
-
-  // Close dropdown when input loses focus
-  input.addEventListener("blur", function() {
-    setTimeout(removeCurrentList, 150);
-  });
-}
-
-// Function to auto-fill city and address when consigner is selected
-function onConsignerSelect(selectedItem) {
-  const cityInput = document.getElementById('city');
-  const addressInput = document.getElementById('address');
-  
-  if (selectedItem.startsfrom && cityInput) {
-    cityInput.value = selectedItem.startsfrom;
-    cityInput.dataset.selectedId = selectedItem.stcompanyid || '';
-    showFieldError(cityInput, false);
-  }
-  
-  if (selectedItem.address && addressInput) {
-    addressInput.value = selectedItem.address;
-    showFieldError(addressInput, false);
-  }
-}
-
-// Function to auto-fill city and route when consignee is selected
-function onConsigneeSelect(selectedItem) {
-  const cityInput = document.getElementById('cCity');
-  const routeInput = document.getElementById('cRoute');
-  const addressInput = document.getElementById('cAddress');
-  const phoneInput = document.getElementById('cPhone');
-  
-  if (selectedItem.destination && cityInput) {
-    cityInput.value = selectedItem.destination;
-    cityInput.dataset.destinationid = selectedItem.destinationid || '';
-    showFieldError(cityInput, false);
-    
-    if (selectedItem.destinationid) {
-      convertDestinationIdToCityId(selectedItem.destinationid, selectedItem.destination);
-    }
-  }
-  
-  if (selectedItem.dst_address && addressInput) {
-    addressInput.value = selectedItem.dst_address;
-    showFieldError(addressInput, false);
-  }
-  
-  if (selectedItem.dst_phone_number && phoneInput) {
-    phoneInput.value = selectedItem.dst_phone_number;
-    showFieldError(phoneInput, false);
-  }
-}
-
-// Function to convert destinationid to cityid by searching in city API
-function convertDestinationIdToCityId(destinationId, destinationName) {
-  const body = {
-    app_id: localStorage.getItem("app_id") || "Mzk-",
-    search: destinationName,
-    term: destinationName
-  };
-
-  fetch(BASE_URL + API_ENDPOINTS.city, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  })
-  .then(r => {
-    return r.json();
-  })
-  .then(data => {
-    let cities = data.citydet || [];
-    
-    const matchingCity = cities.find(city => 
-      city.city_name && city.city_name.toLowerCase() === destinationName.toLowerCase()
-    );
-    
-    if (matchingCity && matchingCity.cityid) {
-      const cityInput = document.getElementById('cCity');
-      cityInput.dataset.cityId = matchingCity.cityid;
-      loadRoutesForConsigneeCity(matchingCity.cityid);
-    } else {
-      const cityById = cities.find(city => city.cityid === destinationId);
-      if (cityById && cityById.cityid) {
-        const cityInput = document.getElementById('cCity');
-        cityInput.dataset.cityId = cityById.cityid;
-        loadRoutesForConsigneeCity(cityById.cityid);
-      } else {
-        allowManualRouteInput();
-      }
-    }
-  })
-  .catch(err => {
-    console.error("Error converting destinationid to cityid:", err);
-    allowManualRouteInput();
-  });
-}
-
-// Function to load routes for consignee city
-function loadRoutesForConsigneeCity(cityId) {
-  const routeInput = document.getElementById('cRoute');
-
-  if (!cityId) {
-    allowManualRouteInput();
-    return;
-  }
-
-  const body = {
-    app_id: localStorage.getItem("app_id") || "Mzk-",
-    cityid: cityId
-  };
-
-  fetch(BASE_URL + API_ENDPOINTS.route, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  })
-  .then(r => {
-    return r.json();
-  })
-  .then(data => {
-    if (data.result !== "1") {
-      allowManualRouteInput();
-      return;
-    }
-
-    let list = data.routedet || [];
-    if (list.length === 0) {
-      allowManualRouteInput();
-      return;
-    }
-    
-    if (list.length === 1) {
-      const route = list[0];
-      routeInput.value = route.rt_name;
-      routeInput.dataset.selectedId = route.rtid;
-      routeInput.placeholder = "Route";
-      showFieldError(routeInput, false);
-    } else if (list.length > 1) {
-      showRouteDropdown(list, routeInput);
-    }
-  })
-  .catch(err => {
-    allowManualRouteInput();
-  });
-}
-
-// Function to allow manual input in route field
-function allowManualRouteInput() {
-  const routeInput = document.getElementById('cRoute');
-  routeInput.value = "";
-  routeInput.placeholder = "No routes found - Enter route manually";
-  routeInput.dataset.selectedId = "";
-}
-
-// Function to show route dropdown
-function showRouteDropdown(routes, routeInput) {
-  const wrapper = routeInput.parentElement;
-  
-  const existingDropdown = wrapper.querySelector('.autocomplete-items');
-  if (existingDropdown) {
-    existingDropdown.remove();
-  }
-  
-  let dropdown = document.createElement("div");
-  dropdown.className = "autocomplete-items";
-  wrapper.appendChild(dropdown);
-
-  let currentFocus = -1;
-
-  routes.forEach((item, index) => {
-    const div = document.createElement("div");
-    div.className = "autocomplete-item";
-    div.textContent = item.rt_name;
-
-    div.onclick = () => {
-      routeInput.value = item.rt_name;
-      routeInput.dataset.selectedId = item.rtid;
-      routeInput.placeholder = "Route";
-      dropdown.remove();
-      showFieldError(routeInput, false);
-    };
-
-    dropdown.appendChild(div);
-  });
-
-  // Keyboard navigation for route dropdown
-  routeInput.addEventListener("keydown", function(e) {
-    const items = dropdown.querySelectorAll('.autocomplete-item');
-    
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (items && items.length > 0) {
-        currentFocus++;
-        if (currentFocus >= items.length) currentFocus = 0;
-        setActiveDropdownItem(items, currentFocus);
-      }
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (items && items.length > 0) {
-        currentFocus--;
-        if (currentFocus < 0) currentFocus = items.length - 1;
-        setActiveDropdownItem(items, currentFocus);
-      }
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (items && items.length > 0 && currentFocus > -1) {
-        items[currentFocus].click();
-      }
-    } else if (e.key === 'Escape') {
-      dropdown.remove();
-    }
-  });
-
-  function setActiveDropdownItem(items, index) {
-    items.forEach(item => item.classList.remove('active'));
-    if (index >= 0 && index < items.length) {
-      items[index].classList.add('active');
-      items[index].scrollIntoView({ block: 'nearest' });
-    }
-  }
-}
-
-function initAutocomplete() {
-  createAutocomplete(
-    "companyName",
-    API_ENDPOINTS.consigner,
-    "consignordet",
-    "company_name",
-    "stcompanyid",
-    onConsignerSelect
-  );
-
-  createAutocomplete(
-    "city",
-    API_ENDPOINTS.city,
-    "citydet",
-    "city_name",
-    "cityid"
-  );
-
-  createAutocomplete(
-    "cName",
-    API_ENDPOINTS.consignee,
-    "consigneedet",
-    "dst_company_name",
-    "dstcompanyid",
-    onConsigneeSelect
-  );
-
-  createAutocomplete(
-    "cCity",
-    API_ENDPOINTS.city,
-    "citydet",
-    "city_name",
-    "cityid"
-  );
-}
-
-/* -------------------------
-   Existing Functions
--------------------------*/
-function showFieldError(field, show=true) {
-  const err = field && field.nextElementSibling;
-  if (show) {
-    field.classList.add('is-invalid-field');
-    if (err) err.style.display = 'block';
-  } else {
-    field.classList.remove('is-invalid-field');
-    if (err) err.style.display = 'none';
-  }
-}
-
-document.addEventListener("keydown", function (e) {
-  if (e.target.type === "number") {
-    if (["e", "E", "+", "-"].includes(e.key)) {
-      e.preventDefault();
-    }
-  }
-});
-
-function validateFields(selector) {
-  let allValid = true;
-  document.querySelectorAll(selector).forEach(field => {
-    const value = (field.value || '').trim();
-
-    if (field.type === 'tel' && field.pattern) {
-      const reg = new RegExp(`^${field.pattern}$`);
-      if (!reg.test(value)) { showFieldError(field, true); allValid = false; return; }
-      showFieldError(field, false);
-      return;
-    }
-
-    if (!value) { showFieldError(field, true); allValid = false; return; }
-    showFieldError(field, false);
-  });
-  return allValid;
-}
-
-// Function to collect box data
-function collectBoxData() {
-  const boxData = {
-    small: { qty: 0, price: 0 },
-    medium: { qty: 0, price: 0 },
-    large: { qty: 0, price: 0 }
-  };
-
-  // Collect box quantities
-  document.querySelectorAll('.box-qty').forEach(input => {
-    const size = input.dataset.size;
-    const value = parseInt(input.value) || 0;
-    if (value > 0) {
-      boxData[size].qty = value;
-    }
-  });
-
-  // Collect box prices
-  document.querySelectorAll('.box-price').forEach(input => {
-    const size = input.dataset.size;
-    const value = parseFloat(input.value) || 0;
-    if (value > 0) {
-      boxData[size].price = value;
-    }
-  });
-
-  return boxData;
-}
-
-// Function to collect cover data
-function collectCoverData() {
-  const coverData = {
-    small: { qty: 0, price: 0 },
-    medium: { qty: 0, price: 0 },
-    large: { qty: 0, price: 0 }
-  };
-
-  // Collect cover quantities
-  document.querySelectorAll('.cover-qty').forEach(input => {
-    const size = input.dataset.size;
-    const value = parseInt(input.value) || 0;
-    if (value > 0) {
-      coverData[size].qty = value;
-    }
-  });
-
-  // Collect cover prices
-  document.querySelectorAll('.cover-price').forEach(input => {
-    const size = input.dataset.size;
-    const value = parseFloat(input.value) || 0;
-    if (value > 0) {
-      coverData[size].price = value;
-    }
-  });
-
-  return coverData;
-}
-
-// Add this function to close all autocomplete dropdowns when clicking outside
-function closeAllAutocompleteDropdowns(event) {
-  const autocompleteItems = document.querySelectorAll('.autocomplete-items');
-  const autocompleteInputs = document.querySelectorAll('.autocomplete-input');
-  
-  let clickedInsideAutocomplete = false;
-  
-  autocompleteItems.forEach(dropdown => {
-    if (dropdown.contains(event.target)) {
-      clickedInsideAutocomplete = true;
-    }
-  });
-  
-  autocompleteInputs.forEach(input => {
-    if (input.contains(event.target) || input === event.target) {
-      clickedInsideAutocomplete = true;
-    }
-  });
-  
-  if (!clickedInsideAutocomplete) {
-    autocompleteItems.forEach(dropdown => {
-      dropdown.remove();
     });
-  }
-}
 
-// Add click event listener to document
-document.addEventListener('click', closeAllAutocompleteDropdowns);
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft' && currentPage > 1) {
+        goToPreviousPage();
+      } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
+        goToNextPage();
+      }
+    });
 
-/* Payment select */
-function selectPayment(type) {
-  document.querySelectorAll('.payment-box').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById(type + 'Box');
-  if (btn) btn.classList.add('active');
-  selectedPayment = type;
-  document.getElementById('paymentError').style.display = 'none';
-
-  const firstBoxQty = document.querySelector('.box-qty');
-  if (firstBoxQty) firstBoxQty.focus();
-
-  checkBoxCoverCompletion();
-}
-window.selectPayment = selectPayment;
-
-/* Enable/disable buttons on CONSIGNEE tab only */
-function setConsigneeButtonsEnabled(enabled) {
-  const nc = document.getElementById('nextConsignee');
-  if (nc) nc.classList.toggle('disabled-btn', !enabled);
-  saveBtn.classList.toggle('disabled-btn', !enabled);
-
-  if (nc) nc.disabled = !enabled;
-  saveBtn.disabled = !enabled;
-}
-
-/* Box/Cover completeness check */
-function checkBoxCoverCompletion() {
-  let boxValid = false, coverValid = false;
-
-  const boxQty = document.querySelectorAll('.box-qty');
-  const boxPrice = document.querySelectorAll('.box-price');
-  boxQty.forEach((b, i) => {
-    const p = boxPrice[i];
-    if (Number(b.value) > 0 && p && Number(p.value) > 0) boxValid = true;
-  });
-
-  const coverQty = document.querySelectorAll('.cover-qty');
-  const coverPrice = document.querySelectorAll('.cover-price');
-  coverQty.forEach((c, i) => {
-    const p = coverPrice[i];
-    if (Number(c.value) > 0 && p && Number(p.value) > 0) coverValid = true;
-  });
-
-  const onConsigneeTab = document.getElementById('tab2').classList.contains('active');
-  const error = document.getElementById('boxCoverError');
-
-  if (onConsigneeTab) {
-    if (boxValid && coverValid) {
-      error.style.display = 'none';
-      setConsigneeButtonsEnabled(true);
-    } else {
-      error.style.display = 'block';
-      setConsigneeButtonsEnabled(false);
+    // ============================
+    // small helpers
+    // ============================
+    function escapeHtml(unsafe) {
+      if (unsafe === null || unsafe === undefined) return '';
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
-  }
-}
-
-// Input listeners for box/cover fields
-document.addEventListener('input', e => {
-  if (
-    e.target.classList.contains('box-qty') ||
-    e.target.classList.contains('box-price') ||
-    e.target.classList.contains('cover-qty') ||
-    e.target.classList.contains('cover-price')
-  ) {
-    checkBoxCoverCompletion();
-  }
-
-  if (e.target.classList.contains("is-invalid-field")) {
-    showFieldError(e.target, false);
-  }
-});
-
-/* NEXT from tab1 -> tab2 */
-nextBtn.addEventListener('click', () => {
-  const onTab1 = document.getElementById('tab1').classList.contains('active');
-  if (onTab1) {
-    const valid = validateFields('#consignorForm .required-field');
-  
-    if (!valid) return;
-
-    tab2Btn.classList.remove('disabled');
-    tab2Btn.setAttribute('data-bs-toggle','tab');
-    tab2Btn.setAttribute('data-bs-target','#tab2');
-
-    const t = new bootstrap.Tab(tab2Btn);
-    t.show();
-
-    nextBtn.classList.add('d-none');
-    saveBtn.classList.remove('d-none');
-    backBtn.classList.remove('d-none');
-
-    if (!document.getElementById("nextConsignee")) {
-      const btn = document.createElement("button");
-      btn.className = "btn btn-warning ms-2";
-      btn.id = "nextConsignee";
-      btn.type = "button";
-      btn.textContent = "Next";
-      saveBtn.insertAdjacentElement("beforebegin", btn);
-      btn.addEventListener("click", handleNextConsignee);
-    }
-
-    setConsigneeButtonsEnabled(false);
-    checkBoxCoverCompletion();
-  }
-});
-
-/* BACK to tab1 */
-backBtn.addEventListener('click', () => {
-  const t = new bootstrap.Tab(tab1Btn);
-  t.show();
-
-  saveBtn.classList.add('d-none');
-  backBtn.classList.add('d-none');
-  nextBtn.classList.remove('d-none');
-
-  const nc = document.getElementById("nextConsignee");
-  if (nc) nc.remove();
-
-  tab2Btn.classList.add('disabled');
-  tab2Btn.removeAttribute('data-bs-toggle');
-  tab2Btn.removeAttribute('data-bs-target');
-});
-
-/* NEXT CONSIGNEE */
-function handleNextConsignee() {
-  if (!validateFields('#consigneeForm .required-field2')) {
-    return;
-  }
-
-  if (!selectedPayment) {
-    document.getElementById('paymentError').style.display = 'block';
-    return;
-  }
-
-  checkBoxCoverCompletion();
-  if (saveBtn.disabled) {
-    return;
-  }
-
-  // Collect packaging data
-  const boxData = collectBoxData();
-  const coverData = collectCoverData();
-
-  const data = {
-    name: cName.value,
-    city: cCity.value,
-    cityId: cCity.dataset.cityId || cCity.dataset.selectedId || '',
-    route: cRoute.value,
-    routeId: cRoute.dataset.selectedId || '',
-    address: cAddress.value,
-    phone: cPhone.value,
-    consigneeId: cName.dataset.selectedId || '',
-    paymentType: selectedPayment,
-    packaging: {
-      boxes: boxData,
-      covers: coverData
-    }
-  };
-  consignees.push(data);
-
-  document.querySelectorAll('#consigneeForm input, #consigneeForm textarea').forEach(i => {
-    if (!i.classList.contains('box-qty') &&
-        !i.classList.contains('box-price') &&
-        !i.classList.contains('cover-qty') &&
-        !i.classList.contains('cover-price')) {
-      i.value = "";
-    }
-  });
-
-  document.querySelectorAll('.box-qty, .box-price, .cover-qty, .cover-price').forEach(i => i.value = "");
-  setConsigneeButtonsEnabled(false);
-  checkBoxCoverCompletion();
-
-  alert("Consignee added. You can enter another now.");
-}
-
-/* SAVE ALL */
-saveBtn.addEventListener('click', () => {
-  if (!validateFields('#consigneeForm .required-field2')) {
-    return;
-  }
-  if (!selectedPayment) {
-    document.getElementById('paymentError').style.display = 'block';
-    return;
-  }
-  checkBoxCoverCompletion();
-  if (saveBtn.disabled) {
-    return;
-  }
-
-  // Collect packaging data for final consignee
-  const boxData = collectBoxData();
-  const coverData = collectCoverData();
-
-  // Include the final (currently filled) consignee too
-  const final = {
-    name: cName.value,
-    city: cCity.value,
-    cityId: cCity.dataset.cityId || cCity.dataset.selectedId || '',
-    route: cRoute.value,
-    routeId: cRoute.dataset.selectedId || '',
-    address: cAddress.value,
-    phone: cPhone.value,
-    consigneeId: cName.dataset.selectedId || '',
-    paymentType: selectedPayment,
-    packaging: {
-      boxes: boxData,
-      covers: coverData
-    }
-  };
-  consignees.push(final);
-
-  const consignor = {
-    podNo: podNo.value,
-    supplierInvoice: supplierInvoice.value,
-    companyName: companyName.value,
-    consignorId: companyName.dataset.selectedId || '',
-    city: city.value,
-    cityId: city.dataset.selectedId || '',
-    address: address.value,
-    phone: phone.value,
-    courierStatus: courierStatus.value
-  };
-
-  const finalOrder = {
-  consignor: consignor,
-  consignees: consignees,
-  savedAt: new Date().toISOString()
-};
-
-// PRINT FINAL JSON IN CONSOLE
-console.log("📦 FINAL ORDER JSON:", JSON.stringify(finalOrder, null, 2));
-
-// SEND FINAL ORDER TO SERVER
-  fetch("save_order.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(finalOrder)
-  })
-  .then(r => {
-    return r.json();
-  })
-  .then(data => {
-    if (data.success) {
-      alert("Order saved successfully on server. Total consignees: " + consignees.length);
-      // Optionally reset the form or redirect
-      console.log('Order saved successfully:', data);
-    } else {
-      alert("Failed to save order: " + (data.message || 'Unknown error'));
-    }
-  })
-  .catch(err => {
-    console.error("Error saving order:", err);
-    alert("Server error, please try again later.");
-  });
-});
-
-// Initialize autocomplete when page loads
-document.addEventListener('DOMContentLoaded', function() {
-  initAutocomplete();
-});
-</script>
+  </script>
 </body>
 </html>
