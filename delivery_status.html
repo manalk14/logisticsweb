@@ -113,7 +113,17 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-const APP_ID = "Mzk-";
+// Get APP_ID from localStorage
+function getAppId() {
+    const appId = localStorage.getItem('app_id');
+    if (!appId) {
+        // Redirect to login if app_id is not found
+        window.location.href = 'login.html';
+        return null;
+    }
+    return appId;
+}
+
 let selectedRouteId = "";
 let selectedRoute = "";
 let allOrders = [];
@@ -122,152 +132,160 @@ const PER_PAGE = 10;
 
 /****** OPEN MODAL ******/
 document.addEventListener("DOMContentLoaded", async () => {
-  // Check if we have a previously selected route
-  const savedRouteId = localStorage.getItem("selectedRouteId");
-  const savedRouteName = localStorage.getItem("selectedRouteName");
-  
-  if (savedRouteId && savedRouteName) {
-    // If we have a saved route, use it directly
-    selectedRouteId = savedRouteId;
-    selectedRoute = savedRouteName;
+    // Check authentication first
+    const appId = getAppId();
+    if (!appId) return;
+
+    // Check if we have a previously selected route
+    const savedRouteId = localStorage.getItem("selectedRouteId");
+    const savedRouteName = localStorage.getItem("selectedRouteName");
     
-    updateRouteBadge();
-    loadOrders();
-  } else {
-    // If no saved route, show the modal
-    showRouteModal();
-  }
+    if (savedRouteId && savedRouteName) {
+        // If we have a saved route, use it directly
+        selectedRouteId = savedRouteId;
+        selectedRoute = savedRouteName;
+        
+        updateRouteBadge();
+        loadOrders();
+    } else {
+        // If no saved route, show the modal
+        showRouteModal();
+    }
 });
 
 console.log("Delivery Status Page Loaded");
 
 /****** SHOW ROUTE MODAL ******/
 function showRouteModal() {
-  loadRoutes().then(() => {
-    new bootstrap.Modal(document.getElementById("routeModal")).show();
-  });
+    loadRoutes().then(() => {
+        new bootstrap.Modal(document.getElementById("routeModal")).show();
+    });
 }
 
 /****** LOAD ROUTES ******/
-fetch("https://www.loginlogistics.in/main/driverapp/get_my_delivery_routes.php", {
-  method:"POST",
-  headers:{ "Content-Type":"application/json" },
-  body: JSON.stringify({ app_id:"Mzk-" })
-})
-.then(r=>r.json()).then(console.log);
-
 async function loadRoutes() {
-  try {
-    const res = await fetch("https://www.loginlogistics.in/main/driverapp/get_my_delivery_routes.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ app_id: APP_ID })
-    });
+    try {
+        const appId = getAppId();
+        if (!appId) return;
 
-    const data = await res.json();
-    console.log("📥 Route Response:", data);
+        const res = await fetch("https://www.loginlogistics.in/main/driverapp/get_my_delivery_routes.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ app_id: appId })
+        });
 
-    let routes = data.routedet; // Correct array
+        const data = await res.json();
+        console.log("📥 Route Response:", data);
 
-    if (!routes || routes.length === 0) {
-      alert("⚠ No routes found");
-      return;
+        let routes = data.routedet; // Correct array
+
+        if (!routes || routes.length === 0) {
+            alert("⚠ No routes found");
+            return;
+        }
+
+        const dropdown = document.getElementById("routeDropdown");
+        dropdown.innerHTML = '<option value="">-- Select Route --</option>';
+
+        // Check if we have a saved route and pre-select it
+        const savedRouteId = localStorage.getItem("selectedRouteId");
+        
+        routes.forEach(r => {
+            const option = document.createElement("option");
+            option.value = r.rtid;      // Route ID
+            option.textContent = r.rt_name;  // Route Name
+            
+            // Pre-select if it matches saved route
+            if (savedRouteId && r.rtid === savedRouteId) {
+                option.selected = true;
+            }
+            
+            dropdown.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error("Route Fetch Error:", err);
+        alert("Failed to load routes");
     }
-
-    const dropdown = document.getElementById("routeDropdown");
-    dropdown.innerHTML = '<option value="">-- Select Route --</option>';
-
-    // Check if we have a saved route and pre-select it
-    const savedRouteId = localStorage.getItem("selectedRouteId");
-    
-    routes.forEach(r => {
-      const option = document.createElement("option");
-      option.value = r.rtid;      // Route ID
-      option.textContent = r.rt_name;  // Route Name
-      
-      // Pre-select if it matches saved route
-      if (savedRouteId && r.rtid === savedRouteId) {
-        option.selected = true;
-      }
-      
-      dropdown.appendChild(option);
-    });
-
-  } catch (err) {
-    console.error("Route Fetch Error:", err);
-    alert("Failed to load routes");
-  }
 }
 
 /****** UPDATE ROUTE BADGE ******/
 function updateRouteBadge() {
-  document.getElementById("routeBadge").innerHTML =
-    `<div class="route-badge" id="routeHeader" onclick="showRouteModal()">
-      Route: ${selectedRoute} <i class="fas fa-edit"></i>
-    </div>`;
+    document.getElementById("routeBadge").innerHTML =
+        `<div class="route-badge" id="routeHeader" onclick="showRouteModal()">
+        Route: ${selectedRoute} <i class="fas fa-edit"></i>
+        </div>`;
 }
 
 document.getElementById("backButton").addEventListener("click",()=>{ 
-  // Clear the saved route when going back to index
-  localStorage.removeItem("selectedRouteId");
-  localStorage.removeItem("selectedRouteName");
-  window.location.href="index.html";
+    // Clear the saved route when going back to index
+    localStorage.removeItem("selectedRouteId");
+    localStorage.removeItem("selectedRouteName");
+    window.location.href="index.html";
 });
 
 document.getElementById("cancelBtn").addEventListener("click", () => {
-  // Clear the saved route when canceling
-  localStorage.removeItem("selectedRouteId");
-  localStorage.removeItem("selectedRouteName");
-  window.location.href = "index.html";
+    // Clear the saved route when canceling
+    localStorage.removeItem("selectedRouteId");
+    localStorage.removeItem("selectedRouteName");
+    window.location.href = "index.html";
 });
 
 
 /****** APPLY SELECTED ROUTE ******/
 document.getElementById("applyRouteBtn").addEventListener("click", () => {
-  selectedRouteId = document.getElementById("routeDropdown").value;
-  selectedRoute   = document.getElementById("routeDropdown")
-                   .options[document.getElementById("routeDropdown").selectedIndex].text;
+    selectedRouteId = document.getElementById("routeDropdown").value;
+    selectedRoute   = document.getElementById("routeDropdown")
+                    .options[document.getElementById("routeDropdown").selectedIndex].text;
 
-  if(!selectedRouteId){
-    alert("Please choose a route");
-    return;
-  }
+    if(!selectedRouteId){
+        alert("Please choose a route");
+        return;
+    }
 
-  // Save the selected route to localStorage
-  localStorage.setItem("selectedRouteId", selectedRouteId);
-  localStorage.setItem("selectedRouteName", selectedRoute);
+    // Save the selected route to localStorage
+    localStorage.setItem("selectedRouteId", selectedRouteId);
+    localStorage.setItem("selectedRouteName", selectedRoute);
 
-  updateRouteBadge();
+    updateRouteBadge();
 
-  document.activeElement.blur();
-  bootstrap.Modal.getInstance(document.getElementById("routeModal")).hide();
-  loadOrders();
+    document.activeElement.blur();
+    bootstrap.Modal.getInstance(document.getElementById("routeModal")).hide();
+    loadOrders();
 });
 
 
 /****** LOAD ORDERS ******/
 async function loadOrders(){
-  document.getElementById("loadingSpinner").style.display="block";
-  document.getElementById("orderList").innerHTML="";
-  document.getElementById("noOrdersMessage").style.display="none";
+    const appId = getAppId();
+    if (!appId) return;
 
-  const res = await fetch("https://www.loginlogistics.in/main/driverapp/delivery-orders.php",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ app_id: APP_ID, route_id: selectedRouteId })
-  });
+    document.getElementById("loadingSpinner").style.display="block";
+    document.getElementById("orderList").innerHTML="";
+    document.getElementById("noOrdersMessage").style.display="none";
 
-  const data = await res.json();
-  allOrders = data.delOrders;
+    try {
+        const res = await fetch("https://www.loginlogistics.in/main/driverapp/delivery-orders.php",{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ app_id: appId, route_id: selectedRouteId })
+        });
 
-  if(data.result==="1" && allOrders.length > 0){
-    renderOrders();
-    setupPagination();
-  } else {
-    document.getElementById("noOrdersMessage").style.display="block";
-  }
+        const data = await res.json();
+        allOrders = data.delOrders;
 
-  document.getElementById("loadingSpinner").style.display="none";
+        if(data.result==="1" && allOrders.length > 0){
+            renderOrders();
+            setupPagination();
+        } else {
+            document.getElementById("noOrdersMessage").style.display="block";
+        }
+    } catch (error) {
+        console.error("Error loading orders:", error);
+        alert("Failed to load orders");
+    } finally {
+        document.getElementById("loadingSpinner").style.display="none";
+    }
 }
 
 /****** GET PAYMENT STATUS CLASS ******/
@@ -300,77 +318,83 @@ function getPaymentStatusText(paymentStatus) {
 
 /****** RENDER ORDERS ******/
 function renderOrders(){
-  let start = (currentPage - 1) * PER_PAGE;
-  let pageOrders = allOrders.slice(start, start + PER_PAGE);
-  let html = "";
+    let start = (currentPage - 1) * PER_PAGE;
+    let pageOrders = allOrders.slice(start, start + PER_PAGE);
+    let html = "";
 
-  pageOrders.forEach(order =>{
-    const paymentStatusClass = getPaymentStatusClass(order.payment_status);
-    const paymentStatusText = getPaymentStatusText(order.payment_status);
-    
-    html += `
+    pageOrders.forEach(order =>{
+        const paymentStatusClass = getPaymentStatusClass(order.payment_status);
+        const paymentStatusText = getPaymentStatusText(order.payment_status);
+        
+        html += `
 <div class="card p-3 mb-2 position-relative">
-  <!-- Delivery Status Badge -->
-  <span class="status-badge ${order.courier_status.toLowerCase()==='delivered' ? 'status-green' : 'status-red'}">
+    <!-- Delivery Status Badge -->
+    <span class="status-badge ${order.courier_status.toLowerCase()==='delivered' ? 'status-green' : 'status-red'}">
     ${order.courier_status}
-  </span> &nbsp;
+    </span> &nbsp;
 
-  <div class="order-row">
+    <div class="order-row">
     <div class="details-left">
-      <strong>POD:</strong> ${order.pod_no}<br>
-      <strong>Consignee:</strong> ${order.consignee}<br>
-      <strong>Consignor:</strong> ${order.consignor}<br>
-      <span class="amount-badge"><i class="fa-solid fa-rupee-sign"></i> ${order.total_amount}</span>
+        <strong>POD:</strong> ${order.pod_no}<br>
+        <strong>Consignee:</strong> ${order.consignee}<br>
+        <strong>Consignor:</strong> ${order.consignor}<br>
+        <span class="amount-badge"><i class="fa-solid fa-rupee-sign"></i> ${order.total_amount}</span>
     </div>
 
     <div class="details-right">
-      <strong>Qty:</strong> ${order.total_qty}<br>
-      <strong>Stop:</strong> ${order.stop}<br>
-       &nbsp; &nbsp; &nbsp;<span class="payment-status-badge ${paymentStatusClass}">
-    ${paymentStatusText}
-  </span>
+        <strong>Qty:</strong> ${order.total_qty}<br>
+        <strong>Stop:</strong> ${order.stop}<br>
+        &nbsp; &nbsp; &nbsp;<span class="payment-status-badge ${paymentStatusClass}">
+        ${paymentStatusText}
+        </span>
     </div>
-  </div>
+    </div>
 
-  <!-- EDIT BUTTON ADDED HERE -->
-  <div class="order-actions">
+    <!-- EDIT BUTTON ADDED HERE -->
+    <div class="order-actions">
     <button class="btn btn-warning small-action-btn" onclick="editOrder('${order.ord_id}')">
-      <i class="fa-solid fa-pen"></i>
+        <i class="fa-solid fa-pen"></i>
     </button>
-  </div>
+    </div>
 </div>`;
-  });
+    });
 
-  document.getElementById("orderList").innerHTML = html;
+    document.getElementById("orderList").innerHTML = html;
 }
 
 /****** PAGINATION ******/
 function setupPagination(){
-  const totalPages = Math.ceil(allOrders.length / PER_PAGE);
-  document.getElementById("paginationContainer").classList.remove("d-none");
-  document.getElementById("pageInfo").innerText = `${currentPage}/${totalPages}`;
+    const totalPages = Math.ceil(allOrders.length / PER_PAGE);
+    document.getElementById("paginationContainer").classList.remove("d-none");
+    document.getElementById("pageInfo").innerText = `${currentPage}/${totalPages}`;
 
-  document.getElementById("prevBtn").onclick = () => {
-    if(currentPage > 1){ currentPage--; renderOrders(); setupPagination(); }
-  };
+    document.getElementById("prevBtn").onclick = () => {
+        if(currentPage > 1){ currentPage--; renderOrders(); setupPagination(); }
+    };
 
-  document.getElementById("nextBtn").onclick = () => {
-    if(currentPage < totalPages){ currentPage++; renderOrders(); setupPagination(); }
-  };
+    document.getElementById("nextBtn").onclick = () => {
+        if(currentPage < totalPages){ currentPage++; renderOrders(); setupPagination(); }
+    };
 }
 
 /****** EDIT ORDER - REDIRECT TO EDIT_DELIVERY.HTML ******/
 function editOrder(id){
-  localStorage.setItem("selectedOrderId", id);
-  // The route is already saved in localStorage, so we'll keep it
-  window.location.href = "edit_delivery.html";
+    const appId = getAppId();
+    if (!appId) return;
+
+    localStorage.setItem("selectedOrderId", id);
+    // The route is already saved in localStorage, so we'll keep it
+    window.location.href = "edit_delivery.html";
 }
 
 /****** VIEW ORDER ******/
 function viewOrder(id){
-  localStorage.setItem("selectedOrderId", id);
-  // The route is already saved in localStorage, so we'll keep it
-  window.location.href="view_order.html";
+    const appId = getAppId();
+    if (!appId) return;
+
+    localStorage.setItem("selectedOrderId", id);
+    // The route is already saved in localStorage, so we'll keep it
+    window.location.href="view_order.html";
 }
 </script>
 </body>

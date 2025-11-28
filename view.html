@@ -152,6 +152,17 @@ body {
   </div>
 
   <script>
+    // Check for app_id on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Get app_id from localStorage
+  app_id = localStorage.getItem("app_id");
+  
+  if (!app_id) {
+    alert("Error: app_id not found in localStorage. Please login again.");
+    window.location.href = 'login.html'; // Redirect to login page
+    return;
+  }
+});
     // API URL
     const API_URL = "https://www.loginlogistics.in/main/driverapp/edit-order.php";
 
@@ -207,8 +218,7 @@ body {
         ord_id = (ord_id || "").trim();
 
         const app_id =
-          localStorage.getItem("app_id") ||
-          "Mzk-"; // default as you use everywhere
+          localStorage.getItem("app_id") ; // default as you use everywhere
 
         console.log("Using order ID:", ord_id, "and app ID:", app_id);
 

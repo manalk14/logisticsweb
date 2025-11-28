@@ -304,7 +304,7 @@ main.container {
       </div>
 
       <!-- QUANTITY -->
-      <label class="mt-3 mb-2 fw-semibold">Order Quantities</label>
+      <label class="mt-3 mb-2 fw-semibold">Order Quanties</label>
       <div class="row g-2 qty-grid">
         <!-- Box Quantities -->
         <div class="col-6">
@@ -406,7 +406,17 @@ main.container {
 </footer>
 
 <script>
-const APP_ID = "Mzk-";
+// Get APP_ID from localStorage
+function getAppId() {
+    const appId = localStorage.getItem('app_id');
+    if (!appId) {
+        // Redirect to login if app_id is not found
+        window.location.href = 'login.html';
+        return null;
+    }
+    return appId;
+}
+
 let proofImageBase64 = "";
 let currentOrderData = null;
 let totalAmount = 0;
@@ -416,6 +426,10 @@ document.getElementById("backButton").addEventListener("click",()=>{
 });
 
 document.addEventListener("DOMContentLoaded",()=>{
+  // Check authentication first
+  const appId = getAppId();
+  if (!appId) return;
+
   const notesInput = document.getElementById("deliveryNotes");
   const saveBtn = document.getElementById("saveButton");
   const imageInput = document.getElementById("imageInput");
@@ -609,10 +623,13 @@ function setupPaymentSection(paymentType) {
 
 async function fetchOrderDetails(orderId){
   try{
+    const appId = getAppId();
+    if (!appId) return;
+
     const res = await fetch("https://www.loginlogistics.in/main/driverapp/get_delivery_order_details.php",{
       method:"POST",
       headers:{ "Content-Type":"application/json"},
-      body:JSON.stringify({ ord_id:orderId, app_id:APP_ID })
+      body:JSON.stringify({ ord_id:orderId, app_id: appId })
     });
 
     const data = await res.json();
@@ -667,6 +684,9 @@ async function fetchOrderDetails(orderId){
 
 async function saveDeliveryStatus() {
   try {
+    const appId = getAppId();
+    if (!appId) return;
+
     const orderId = localStorage.getItem("selectedOrderId");
     const notes = document.getElementById("deliveryNotes").value;
 
@@ -691,7 +711,7 @@ async function saveDeliveryStatus() {
     const jsonData = {
       ord_id: orderId,
       notes: notes,
-      app_id: APP_ID,
+      app_id: appId,
       box_small: quantities.box_small,
       box_medium: quantities.box_medium,
       box_large: quantities.box_large,

@@ -242,6 +242,18 @@ let consignees = [];
 let selectedPayment = null;
 let isConsignerFromDropdown = false;
 
+// Check for app_id on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Get app_id from localStorage
+  app_id = localStorage.getItem("app_id");
+  
+  if (!app_id) {
+    alert("Error: app_id not found in localStorage. Please login again.");
+    window.location.href = 'login.html'; // Redirect to login page
+    return;
+  }
+});
+
 // API Configuration
 const BASE_URL = "https://www.loginlogistics.in/main/driverapp/";
 const API_ENDPOINTS = {
