@@ -20,22 +20,21 @@
   </head>
 
   <body>
-    <!-- Header -->
-<!-- Header -->
-<div class="header shadow-sm fixed-top" id="header" style="background-color: #ffca1d; height:50px;">
-  <div class="d-flex align-items-center px-2" style="height:50px;">
+    <div class="header shadow-sm fixed-top" id="header" style="background-color: #ffca1d; height:55px;">
+  <div class="d-flex align-items-center h-100 px-2">
     <button id="backbtn" class="btn btn-link p-0 text-dark">
-      <i class="fa-solid fa-arrow-left fs-6"></i>
+     <i class="fa-solid fa-arrow-left fs-5"></i>
     </button>
-    <h6 class="mb-0 text-dark ms-2" style="font-size: 14px;">View Orders</h6>
+    <h5 class="mb-0 text-dark ms-3 fw-bold">View Orders</h5>
   </div>
 </div>
 
+<div style="margin-top:20px;">  <!-- push content below header -->
+   <!-- Order details here -->
+</div>
 
-
-
-    <!-- Main -->
-    <main class="container mt-3 mb-5">
+ <!-- Main -->
+    <main class="container mt-2 mb-5">
       <div id="orderList"></div>
 
       <div class="loading-spinner" id="loadingSpinner">
@@ -50,15 +49,15 @@
     </main>
 
     <!-- Pagination -->
-    <div
-      id="paginationContainer"
-      class="pagination-container"
-      style="display: none"
-    >
-      <button class="btn btn-outline-primary" id="prevBtn">◀ Previous</button>
-      <span id="pageInfo"></span>
-      <button class="btn btn-outline-primary" id="nextBtn">Next ▶</button>
-    </div>
+  <div class="pagination-container" id="paginationContainer" style="display: none">
+  <button class="pagination-btn" id="prevBtn">
+      <i class="fas fa-chevron-left me-1"></i>Prev
+  </button>
+  <span class="page-info" id="pageInfo">Page 1 of 1</span>
+  <button class="pagination-btn" id="nextBtn">
+      Next<i class="fas fa-chevron-right ms-1"></i>
+  </button>
+</div>
 
     <script>
       // Pagination
@@ -66,7 +65,7 @@
       let currentPage = 1;
       let totalPages = 0;
       let allOrders = [];
-      localStorage.setItem("app_id", "Mzk-");
+      localStorage.getItem("app_id");
 
       document
         .getElementById("backbtn")
@@ -143,7 +142,7 @@
               : `<span class="payment-status ${payClass}">${payText}</span>`;
 
           html += `
-<div class="card shadow-sm row-12">
+<div class="card shadow-sm row-12 mb-2">
   <div class="card-body">
     <div class="order-row mt-2">
 

@@ -11,9 +11,8 @@
 <style>
 .app-header {
   background-color: #ffca1d;
-  padding: 15px 0;
-  color: rgb(0, 0, 0);
-
+  width: 100%;
+  padding: 10px 0;
 }
 
 .content-card {
@@ -163,6 +162,12 @@ main.container {
   font-size: 16px;
 }
 
+.payment-input:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
 .payment-currency {
   font-weight: bold;
   color: #ffa42d;
@@ -172,6 +177,64 @@ main.container {
   color: red;
   font-size: 13px;
   margin-top: 5px;
+}
+
+.payment-disabled-note {
+  color: #6c757d;
+  font-size: 14px;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.image-preview-container {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  display: none;
+}
+
+/* Success Message Styles */
+.success-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #d4edda;
+  color: #155724;
+  padding: 20px 30px;
+  border-radius: 10px;
+  border: 1px solid #c3e6cb;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  z-index: 10000;
+  text-align: center;
+  display: none;
+}
+
+.success-message i {
+  font-size: 40px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.success-message h5 {
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.success-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  display: none;
 }
 
 /* Smaller on small screens */
@@ -185,15 +248,31 @@ main.container {
   .qty-input {
     width: 60px;
   }
+  
+  .success-message {
+    width: 90%;
+    padding: 15px 20px;
+  }
 }
 </style>
 </head>
 
 <body>
 
+<!-- Success Overlay -->
+<div class="success-overlay" id="successOverlay"></div>
+
+<!-- Success Message -->
+<div class="success-message" id="successMessage">
+  <i class="fas fa-check-circle"></i>
+  <h5>Successfully Updated!</h5>
+  <p>Delivery status has been updated successfully.</p>
+  <small>Redirecting back to orders...</small>
+</div>
+
 <!-- HEADER -->
-<header class="app-header mb-3">
-  <div class="container d-flex align-items-center">
+<header class="app-header w-100">
+  <div class="d-flex align-items-center px-3" style="width:100%;">
     <i class="fas fa-arrow-left fa-lg me-3" id="backButton" style="cursor:pointer;"></i>
     <h5 class="mb-0 fw-bold">Update Delivery Status</h5>
   </div>
@@ -272,8 +351,8 @@ main.container {
         </div>
       </div>
 
-      <!-- PAYMENT COLLECTION SECTION (For To Pay orders) -->
-      <div class="payment-section" id="paymentSection" style="display:none;">
+      <!-- PAYMENT COLLECTION SECTION -->
+      <div class="payment-section" id="paymentSection">
         <div class="payment-title">
           <i class="fas fa-money-bill-wave"></i>
           <span>Payment Collection</span>
@@ -292,23 +371,16 @@ main.container {
             placeholder="Enter received amount"
             min="0"
             step="0.01"
+            disabled
           >
         </div>
         <div id="receivedError" class="error-text" style="display:none;"></div>
-        <small class="text-muted">Enter the amount received from the consignee</small>
-      </div>
-
-      <!-- STATUS SELECT -->
-      <label class="mb-2 fw-semibold">Delivery Status</label>
-      <div class="status-options">
-        <div class="status-option selected" data-status="delivered">
-          <i class="fa-solid fa-circle-check" style="color:#00c600;"></i><div>Delivered</div>
-        </div>
-        <div class="status-option" data-status="cancelled">
-          <i class="fa-solid fa-circle-xmark" style="color:#fd1d1d;"></i><div>Cancelled</div>
+        
+        <!-- Dynamic message based on payment type -->
+        <div id="paymentMessage" class="payment-disabled-note">
+          Payment collection is not required for this order type.
         </div>
       </div>
-      <input type="hidden" id="deliveryStatus" value="delivered">
 
       <!-- NOTES -->
       <textarea id="deliveryNotes" rows="3" class="form-control mb-3" placeholder="Delivery notes"></textarea>
@@ -319,8 +391,8 @@ main.container {
         <p>Tap to upload proof image</p>
       </div>
 
-      <div class="existing-image text-center" style="display:none;">
-        <img id="proofImage" alt="Proof">
+      <div class="image-preview-container">
+        <img id="proofImage" class="image-preview" alt="Proof Image Preview">
       </div>
 
       <input type="file" id="imageInput" accept="image/*" style="display:none;">
@@ -335,7 +407,7 @@ main.container {
 
 <script>
 const APP_ID = "Mzk-";
-let proofImageSelected = false;
+let proofImageBase64 = "";
 let currentOrderData = null;
 let totalAmount = 0;
 
@@ -367,34 +439,49 @@ document.addEventListener("DOMContentLoaded",()=>{
   // Image upload handling
   document.getElementById("imageUpload").addEventListener("click",()=>imageInput.click());
 
-  imageInput.addEventListener("change",()=> {
-    if(imageInput.files.length > 0){
-      proofImageSelected = true;
+  imageInput.addEventListener("change", () => {
+    if (imageInput.files.length > 0) {
+      const file = imageInput.files[0];
+      
+      // Check file size (limit to 2MB to avoid large payloads)
+      if (file.size > 2 * 1024 * 1024) {
+        errorImage.textContent = "Image size should be less than 2MB";
+        errorImage.style.display = "block";
+        document.getElementById("imageUpload").style.borderColor = "red";
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = e => {
-        document.getElementById("proofImage").src = e.target.result;
-        document.querySelector(".existing-image").style.display = "block";
+        // Store the full data URL for preview
+        const fullDataUrl = e.target.result;
+        
+        // Extract just the base64 part (remove "data:image/jpeg;base64," prefix)
+        proofImageBase64 = fullDataUrl.split(',')[1];
+        
+        // Show preview with full data URL
+        document.getElementById("proofImage").src = fullDataUrl;
+        document.getElementById("proofImage").style.display = "block";
+
+        // Clear any errors
+        errorImage.style.display = "none";
+        document.getElementById("imageUpload").style.borderColor = "#ddd";
+        
+        console.log("Image loaded successfully. Base64 length:", proofImageBase64.length);
       };
-      reader.readAsDataURL(imageInput.files[0]);
-
-      // Hide error once valid
-      errorImage.style.display = "none";
-      document.getElementById("imageUpload").style.borderColor = "#ddd";
+      
+      reader.onerror = () => {
+        errorImage.textContent = "Error reading image file";
+        errorImage.style.display = "block";
+        document.getElementById("imageUpload").style.borderColor = "red";
+      };
+      
+      reader.readAsDataURL(file);
     }
-  });
-
-  // Status option selection
-  document.querySelectorAll('.status-option').forEach(option => {
-    option.addEventListener('click', function() {
-      document.querySelectorAll('.status-option').forEach(opt => opt.classList.remove('selected'));
-      this.classList.add('selected');
-      document.getElementById('deliveryStatus').value = this.dataset.status;
-    });
   });
 
   // Save Button Validation
   saveBtn.addEventListener("click",()=>{
-
     let valid = true;
 
     // Notes validation
@@ -409,7 +496,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
 
     // Image validation
-    if(!proofImageSelected){
+    if(!proofImageBase64){
       errorImage.textContent = "Proof image required";
       errorImage.style.display = "block";
       document.getElementById("imageUpload").style.borderColor = "red";
@@ -419,7 +506,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       document.getElementById("imageUpload").style.borderColor = "#ddd";
     }
 
-    // Payment validation for "To Pay" orders
+    // Payment validation ONLY for "To Pay" orders
     const paymentTypeText = document.getElementById("paymentTypeDisplay").textContent.trim();
     const receivedError = document.getElementById("receivedError");
     receivedError.style.display = "none";
@@ -447,7 +534,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(valid){
       saveDeliveryStatus();
     }
-
   });
 
   // Load the selected order
@@ -455,7 +541,6 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(!orderId) return showError("No order selected");
   fetchOrderDetails(orderId);
 });
-
 
 function showForm(){
   document.getElementById("loadingSpinner").style.display="none";
@@ -469,6 +554,21 @@ function showError(msg){
   document.getElementById("errorText").textContent = msg;
 }
 
+// Show success message and redirect
+function showSuccessAndRedirect() {
+  const successOverlay = document.getElementById("successOverlay");
+  const successMessage = document.getElementById("successMessage");
+  
+  // Show success message
+  successOverlay.style.display = "block";
+  successMessage.style.display = "block";
+  
+  // Redirect after 2 seconds
+  setTimeout(() => {
+    window.location.href = "delivery_status.html";
+  }, 2000);
+}
+
 // Format payment type (topay -> To Pay, etc.)
 function formatPaymentType(v){
   if(!v) return "-";
@@ -477,6 +577,34 @@ function formatPaymentType(v){
   if(v === "paidorder" || v === "paid_order" || v === "paid order") return "Paid Order";
   if(v === "none") return "None";
   return v.charAt(0).toUpperCase() + v.slice(1);
+}
+
+// Function to handle payment section based on payment type
+function setupPaymentSection(paymentType) {
+  const receivedAmountInput = document.getElementById("receivedAmount");
+  const paymentMessage = document.getElementById("paymentMessage");
+  
+  if (paymentType === "To Pay") {
+    // Enable input for To Pay orders
+    receivedAmountInput.disabled = false;
+    receivedAmountInput.placeholder = "Enter received amount";
+    paymentMessage.textContent = "Please enter the amount received from the consignee";
+    paymentMessage.style.color = "#0d6efd";
+  } else if (paymentType === "Paid Order") {
+    // Disable input and show message for Paid orders
+    receivedAmountInput.disabled = true;
+    receivedAmountInput.placeholder = "Payment already received";
+    receivedAmountInput.value = "";
+    paymentMessage.textContent = "This order is already paid. No payment collection required.";
+    paymentMessage.style.color = "#198754";
+  } else {
+    // Disable input and show message for None/other types
+    receivedAmountInput.disabled = true;
+    receivedAmountInput.placeholder = "Payment not required";
+    receivedAmountInput.value = "";
+    paymentMessage.textContent = "Payment collection is not required for this order type.";
+    paymentMessage.style.color = "#6c757d";
+  }
 }
 
 async function fetchOrderDetails(orderId){
@@ -493,39 +621,38 @@ async function fetchOrderDetails(orderId){
       currentOrderData = data;
       
       document.getElementById("podDisplay").textContent = data.pod_no || "N/A";
-      document.getElementById("paymentTypeDisplay").textContent = formatPaymentType(data.payment_type);
+      
+      const formattedPaymentType = formatPaymentType(data.payment_type);
+      document.getElementById("paymentTypeDisplay").textContent = formattedPaymentType;
 
-     // After setting the quantity fields from API
-document.getElementById("smallBoxQty").value = data.box_small_qty || "0";
-document.getElementById("mediumBoxQty").value = data.box_medium_qty || "0";
-document.getElementById("largeBoxQty").value = data.box_large_qty || "0";
-document.getElementById("smallCoverQty").value = data.cover_small_qty || "0";
-document.getElementById("mediumCoverQty").value = data.cover_medium_qty || "0";
-document.getElementById("largeCoverQty").value = data.cover_large_qty || "0";
+      // Setup payment section based on payment type
+      setupPaymentSection(formattedPaymentType);
 
-// Set max = original quantity so cannot increase
-["smallBoxQty","mediumBoxQty","largeBoxQty",
- "smallCoverQty","mediumCoverQty","largeCoverQty"].forEach(id=>{
-  const input = document.getElementById(id);
-  const original = parseInt(input.value) || 0;
-  input.setAttribute("max", original);
-  input.addEventListener("input", function(){
-      let val = parseInt(input.value) || 0;
-      if(val > original) input.value = original;   // restrict increase
-      if(val < 0) input.value = 0;                // restrict negatives
-  });
-});
+      // After setting the quantity fields from API
+      document.getElementById("smallBoxQty").value = data.box_small_qty || "0";
+      document.getElementById("mediumBoxQty").value = data.box_medium_qty || "0";
+      document.getElementById("largeBoxQty").value = data.box_large_qty || "0";
+      document.getElementById("smallCoverQty").value = data.cover_small_qty || "0";
+      document.getElementById("mediumCoverQty").value = data.cover_medium_qty || "0";
+      document.getElementById("largeCoverQty").value = data.cover_large_qty || "0";
+
+      // Set max = original quantity so cannot increase
+      ["smallBoxQty","mediumBoxQty","largeBoxQty",
+       "smallCoverQty","mediumCoverQty","largeCoverQty"].forEach(id=>{
+        const input = document.getElementById(id);
+        const original = parseInt(input.value) || 0;
+        input.setAttribute("max", original);
+        input.addEventListener("input", function(){
+            let val = parseInt(input.value) || 0;
+            if(val > original) input.value = original;   // restrict increase
+            if(val < 0) input.value = 0;                // restrict negatives
+        });
+      });
 
       // Total amount from API: "5,300.00"
       const totalRaw = data.total_amount || "0.00";
       document.getElementById("totalAmountDisplay").textContent = totalRaw;
       totalAmount = parseFloat(totalRaw.replace(/,/g,"")) || 0;
-
-      // Show payment section only for To Pay
-      const rawType = (data.payment_type || "").toLowerCase().replace(/\s+/g,"").replace(/-/g,"");
-      if(rawType === "topay"){
-        document.getElementById("paymentSection").style.display = "block";
-      }
 
       showForm();
     } else {
@@ -541,10 +668,8 @@ document.getElementById("largeCoverQty").value = data.cover_large_qty || "0";
 async function saveDeliveryStatus() {
   try {
     const orderId = localStorage.getItem("selectedOrderId");
-    const status = document.getElementById("deliveryStatus").value;
     const notes = document.getElementById("deliveryNotes").value;
 
-    // Quantities
     const quantities = {
       box_small: document.getElementById("smallBoxQty").value || "0",
       box_medium: document.getElementById("mediumBoxQty").value || "0",
@@ -557,40 +682,64 @@ async function saveDeliveryStatus() {
     const paymentTypeText = document.getElementById("paymentTypeDisplay").textContent.trim();
     let receivedAmount = "";
 
+    // Only get received amount for To Pay orders
     if(paymentTypeText === "To Pay"){
       receivedAmount = document.getElementById("receivedAmount").value || "0";
     }
 
-    const formData = new FormData();
-    formData.append("ord_id", orderId);
-    formData.append("status", status);
-    formData.append("notes", notes);
-    formData.append("app_id", APP_ID);
+    // Prepare JSON data
+    const jsonData = {
+      ord_id: orderId,
+      notes: notes,
+      app_id: APP_ID,
+      box_small: quantities.box_small,
+      box_medium: quantities.box_medium,
+      box_large: quantities.box_large,
+      cover_small: quantities.cover_small,
+      cover_medium: quantities.cover_medium,
+      cover_large: quantities.cover_large
+    };
 
-    Object.keys(quantities).forEach(key => {
-      formData.append(key, quantities[key]);
-    });
-
+    // Add received amount only for To Pay orders
     if(paymentTypeText === "To Pay"){
-      formData.append("received_amount", receivedAmount);
+      jsonData.received_amount = receivedAmount;
     }
 
-    if (proofImageSelected) {
-      formData.append("proof_image", document.getElementById("imageInput").files[0]);
+    // Add base64 image (just the base64 part, without data URL prefix)
+    if(proofImageBase64){
+      jsonData.proof_image = proofImageBase64;
+      console.log("Image base64 length:", proofImageBase64.length);
+      console.log("Image base64 first 100 chars:", proofImageBase64.substring(0, 100));
+    } else {
+      console.log("No image selected");
     }
 
-    const response = await fetch("https://www.loginlogistics.in/main/driverapp/update_delivery_status.php", {
+    // 🔥 Print JSON data to console (without the full base64 to avoid console clutter)
+    const debugData = {...jsonData};
+    if(debugData.proof_image) {
+      debugData.proof_image = "BASE64_IMAGE_DATA..." + debugData.proof_image.substring(debugData.proof_image.length - 50);
+    }
+    console.log("JSON Data being sent:");
+    console.log(JSON.stringify(debugData, null, 2));
+
+    // Send as JSON
+    const response = await fetch("https://www.loginlogistics.in/main/driverapp/action/update-delivery.php", {
       method: "POST",
-      body: formData
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(jsonData)
     });
 
     const result = await response.json();
+    console.log("API Response:", result);
 
-    if (result.success) {
-      alert("Delivery status updated successfully!");
-      window.location.href = "delivery_status.html";
+    // Handle different response formats
+    if (result.success || result.result === "1" || result.status === "success") {
+      showSuccessAndRedirect();
     } else {
-      alert("Failed to update delivery status: " + (result.message || "Unknown error"));
+      const errorMessage = result.message || result.error || "Unknown error occurred";
+      alert("Failed to update delivery status: " + errorMessage);
     }
 
   } catch (error) {

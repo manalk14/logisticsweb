@@ -69,8 +69,8 @@
 
         <div class="col-6">
             <div class="action-card" onclick="goToPickup()" style="cursor:pointer;">
-                <i class="fa-solid fa-box-open"></i>
-                <p class="fw-semibold mt-2">Pickup Details</p>
+                <i class="fa-brands fa-cash-app"></i>
+                <p class="fw-semibold mt-2">Cash</p>
             </div>
         </div>
 
@@ -85,7 +85,7 @@
 </div>
 
 <!-- Bottom Navigation -->
-<div class="bottom-nav">
+<!-- <div class="bottom-nav">
     <a href="index.html" class="active"><br>
        <i class="fa-solid fa-house" style="color: #ff9500;"></i><br>Home
     </a>
@@ -98,23 +98,67 @@
     <a href="account.html"><br>
         <i class="fa-solid fa-user-ninja" style="color: #ff9500;"></i><br>Account
     </a>
-</div>
+</div> -->
 
 <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
 
 <script>
+    // Authentication check
+    document.addEventListener('DOMContentLoaded', function() {
+        checkAuthentication();
+    });
+
+    function checkAuthentication() {
+        const appId = localStorage.getItem('app_id');
+        
+        // If app_id is not present, redirect to login page
+        if (!appId) {
+            window.location.href = 'login.html'; // Change this to your actual login page
+            return;
+        }
+        
+        // Optional: You can also validate the app_id format if needed
+        // For example, check if it starts with "Mzk-"
+        if (!appId.startsWith('Mzk-')) {
+            localStorage.removeItem('app_id'); // Clear invalid app_id
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // If authenticated, you can optionally display the app_id or user info
+        console.log('User authenticated with app_id:', appId);
+    }
     
     function goToNewOrder() {
+        if (!localStorage.getItem('app_id')) {
+            window.location.href = 'login.html';
+            return;
+        }
         window.location.href = "new_order.html";
     }
+    
     function goToViewOrder() {
+        if (!localStorage.getItem('app_id')) {
+            window.location.href = 'login.html';
+            return;
+        }
         window.location.href = "view_order.html";
     }
+    
     function goToDeliveryStatus() {
+        if (!localStorage.getItem('app_id')) {
+            window.location.href = 'login.html';
+            return;
+        }
         window.location.href = "delivery_status.html";
     }
+    
     function goToPickup() {
-        window.location.href = "pick_up.html";
+        if (!localStorage.getItem('app_id')) {
+            window.location.href = 'login.html';
+            return;
+        }
+        window.location.href = "cash_in_hand.html";
     }
 </script>
 

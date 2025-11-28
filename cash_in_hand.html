@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cash in Hand</title>
+
+    <!-- Bootstrap -->
+    <link
+      href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #ffca1d;
+        --success: #28a745;
+        --danger: #dc3545;
+        --dark: #2c3e50;
+        --light: #f8f9fa;
+        --gray: #6c757d;
+      }
+
+      body {
+        background: #f8f9fa;
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .app-container {
+        background: white;
+        min-height: 100vh;
+      }
+
+      .header {
+        background: var(--primary);
+        padding: 15px 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+      }
+
+      .back-btn {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: var(--dark);
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .back-btn:hover {
+        background: rgba(0,0,0,0.1);
+      }
+
+      .page-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+        margin-left: 15px;
+      }
+
+      .main-content {
+        padding: 20px;
+        padding-bottom: 80px;
+      }
+
+      .summary-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-left: 4px solid var(--primary);
+      }
+
+      .summary-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .summary-text h3 {
+        font-size: 16px;
+        color: var(--gray);
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+
+      .summary-amount {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+      }
+
+      .summary-icon {
+        font-size: 40px;
+        color: var(--primary);
+      }
+
+      .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        text-align: center;
+      }
+
+      .stats-number {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 5px;
+      }
+
+      .stats-label {
+        font-size: 14px;
+        color: var(--gray);
+        font-weight: 600;
+      }
+
+      .receipt-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-left: 4px solid var(--success);
+        transition: all 0.3s ease;
+      }
+
+      .receipt-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      }
+
+      .receipt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+      }
+
+      .receipt-number {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--gray);
+        background: var(--light);
+        padding: 4px 10px;
+        border-radius: 15px;
+      }
+
+      .receipt-amount {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--success);
+      }
+
+      .customer-info {
+        margin-bottom: 8px;
+      }
+
+      .customer-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 4px;
+      }
+
+      .customer-empty {
+        font-size: 14px;
+        color: var(--gray);
+        font-style: italic;
+      }
+
+      .date-info {
+        display: flex;
+        align-items: center;
+        color: var(--gray);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .date-info i {
+        margin-right: 6px;
+        font-size: 12px;
+      }
+
+      .loading-container {
+        text-align: center;
+        padding: 60px 20px;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--gray);
+      }
+
+      .empty-icon {
+        font-size: 60px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+      }
+
+      .error-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: #fff5f5;
+        border-radius: 15px;
+        margin: 20px 0;
+        border: 1px solid #fed7d7;
+      }
+
+      .error-icon {
+        font-size: 40px;
+        color: var(--danger);
+        margin-bottom: 15px;
+      }
+
+      .refresh-btn {
+        background: var(--primary);
+        color: var(--dark);
+        border: none;
+        padding: 10px 25px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .refresh-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      }
+
+      .pagination-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 15px 20px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .pagination-btn {
+        background: var(--primary);
+        color: var(--dark);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .pagination-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      .page-info {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 14px;
+      }
+
+      .receipts-count {
+        font-size: 12px;
+        color: var(--gray);
+        margin-top: 5px;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          padding: 15px;
+          padding-bottom: 70px;
+        }
+        
+        .summary-card {
+          padding: 15px;
+        }
+        
+        .summary-amount {
+          font-size: 24px;
+        }
+        
+        .receipt-card {
+          padding: 14px;
+        }
+        
+        .receipt-amount {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-content">
+          <button class="back-btn" id="backbtn">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <h1 class="page-title">Cash in Hand</h1>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Summary Cards -->
+        <div class="row">
+          <div class="col-8">
+            <div class="summary-card">
+              <div class="summary-content">
+                <div class="summary-text">
+                  <h3>Total Cash Collected</h3>
+                  <div class="summary-amount">₹<span id="totalCash">0.00</span></div>
+                  <div class="receipts-count" id="receiptsCount">0 receipts</div>
+                </div>
+                <i class="fas fa-wallet summary-icon"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stats-card">
+              <div class="stats-number" id="totalReceipts">0</div>
+              <div class="stats-label">Total Receipts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-state" id="errorState" style="display: none">
+          <div class="error-icon">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
+          <h5>Unable to Load Data</h5>
+          <p id="errorText" class="mb-3">There was an error loading your cash records.</p>
+          <button class="refresh-btn" onclick="loadCashRecords()">
+            <i class="fas fa-redo me-2"></i>Try Again
+          </button>
+        </div>
+
+        <!-- Cash Records List -->
+        <div id="cashList"></div>
+
+        <!-- Loading State -->
+        <div class="loading-container" id="loadingState">
+          <div class="spinner"></div>
+          <h5>Loading Cash Records</h5>
+          <p class="text-muted">Please wait while we fetch your data...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none">
+          <div class="empty-icon">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <h4>No Cash Records</h4>
+          <p class="text-muted">You haven't collected any cash yet.</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" id="paginationContainer" style="display: none">
+        <button class="pagination-btn" id="prevBtn">
+          <i class="fas fa-chevron-left me-1"></i>Prev
+        </button>
+        <span class="page-info" id="pageInfo">Page 1 of 1</span>
+        <button class="pagination-btn" id="nextBtn">
+          Next<i class="fas fa-chevron-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Configuration
+      const APP_ID = "Mzk-";
+      const RECORDS_PER_PAGE = 10;
+      let currentPage = 1;
+      let totalPages = 0;
+      let allCashRecords = [];
+      let totalCashAmount = 0;
+
+      // Initialize the page
+      document.addEventListener('DOMContentLoaded', function() {
+        // Back button
+        document.getElementById('backbtn').addEventListener('click', function() {
+          window.history.back();
+        });
+
+        // Load cash records
+        loadCashRecords();
+      });
+
+      // Load cash records from API
+      async function loadCashRecords() {
+        try {
+          showLoadingState();
+          
+          const response = await fetch('https://www.loginlogistics.in/main/driverapp/cash-in-hand.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              app_id: APP_ID
+            })
+          });
+
+          const data = await response.json();
+          console.log('API Response:', data);
+
+          if (data && data.result === "1") {
+            processCashData(data);
+          } else {
+            throw new Error(data?.message || 'Failed to load cash records');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          showErrorState(error.message);
+        }
+      }
+
+      // Process cash data based on your API response format
+      function processCashData(data) {
+        // Extract receipts from the API response
+        allCashRecords = data.allReceipts || [];
+        
+        // Update total receipts count
+        document.getElementById('totalReceipts').textContent = data.ttlreceipts || allCashRecords.length;
+        document.getElementById('receiptsCount').textContent = `${allCashRecords.length} receipts`;
+
+        // Calculate total amount and format records
+        totalCashAmount = 0;
+        allCashRecords = allCashRecords.map(record => {
+          // Convert amount from "5,300.00" to 5300.00
+          const amount = parseFloat(record.amount.replace(/,/g, ''));
+          totalCashAmount += amount;
+          
+          return {
+            receiptNo: record.receipt_no,
+            customerName: record.customer || 'Customer',
+            date: record.add_date,
+            amount: amount,
+            id: record.id
+          };
+        });
+
+        // Update total amount display
+        document.getElementById('totalCash').textContent = totalCashAmount.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+
+        if (allCashRecords.length === 0) {
+          showEmptyState();
+        } else {
+          showCashRecords();
+        }
+      }
+
+      // Show loading state
+      function showLoadingState() {
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('cashList').style.display = 'none';
+        document.getElementById('paginationContainer').style.display = 'none';
+      }
+
+      // Show error state
+      function showErrorState(message) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('cashList').style.display = 'none';
+        document.getElementById('paginationContainer').style.display = 'none';
+        document.getElementById('errorText').textContent = message;
+      }
+
+      // Show empty state
+      function showEmptyState() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('cashList').style.display = 'none';
+        document.getElementById('paginationContainer').style.display = 'none';
+      }
+
+      // Show cash records
+      function showCashRecords() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('cashList').style.display = 'block';
+
+        renderCashRecords();
+        setupPagination();
+      }
+
+      // Render cash records
+      function renderCashRecords() {
+        const startIndex = (currentPage - 1) * RECORDS_PER_PAGE;
+        const endIndex = startIndex + RECORDS_PER_PAGE;
+        const currentRecords = allCashRecords.slice(startIndex, endIndex);
+
+        const cashList = document.getElementById('cashList');
+        cashList.innerHTML = '';
+
+        currentRecords.forEach((record, index) => {
+          const recordElement = document.createElement('div');
+          recordElement.className = 'receipt-card';
+          recordElement.innerHTML = `
+            <div class="receipt-header">
+              <span class="receipt-number">Receipt #${record.receiptNo}</span>
+              <div class="receipt-amount">₹${record.amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            </div>
+            <div class="customer-info">
+              ${record.customerName ? 
+                `<div class="customer-name">${record.customerName}</div>` : 
+                `<div class="customer-empty">No customer name</div>`
+              }
+            </div>
+            <div class="date-info">
+              <i class="fas fa-calendar"></i>
+              ${formatDate(record.date)}
+            </div>
+          `;
+          cashList.appendChild(recordElement);
+        });
+      }
+
+      // Setup pagination
+      function setupPagination() {
+        totalPages = Math.ceil(allCashRecords.length / RECORDS_PER_PAGE);
+        
+        if (totalPages > 1) {
+          document.getElementById('paginationContainer').style.display = 'flex';
+          updatePaginationInfo();
+
+          document.getElementById('prevBtn').onclick = () => {
+            if (currentPage > 1) {
+              currentPage--;
+              renderCashRecords();
+              updatePaginationInfo();
+            }
+          };
+
+          document.getElementById('nextBtn').onclick = () => {
+            if (currentPage < totalPages) {
+              currentPage++;
+              renderCashRecords();
+              updatePaginationInfo();
+            }
+          };
+        } else {
+          document.getElementById('paginationContainer').style.display = 'none';
+        }
+      }
+
+      // Update pagination info
+      function updatePaginationInfo() {
+        document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+        document.getElementById('prevBtn').disabled = currentPage === 1;
+        document.getElementById('nextBtn').disabled = currentPage === totalPages;
+      }
+
+      // Format date from "28/11/2025" to "28 Nov 2025"
+      function formatDate(dateString) {
+        if (!dateString) return 'Date not available';
+        
+        try {
+          // Handle "28/11/2025" format
+          if (dateString.includes('/')) {
+            const parts = dateString.split('/');
+            if (parts.length === 3) {
+              const day = parts[0];
+              const month = parts[1];
+              const year = parts[2];
+              
+              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              const monthName = monthNames[parseInt(month) - 1];
+              
+              return `${day} ${monthName} ${year}`;
+            }
+          }
+          
+          return dateString;
+        } catch (error) {
+          return dateString;
+        }
+      }
+
+      // Auto-refresh every 2 minutes
+      setInterval(loadCashRecords, 120000);
+    </script>
+  </body>
+</html>

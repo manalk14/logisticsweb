@@ -1,122 +1,373 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
-    <link href="css/index.css" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Status</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="css/delivery_status.css" rel="stylesheet"/>
+
+<style>
+    .payment-status-badge {
+        position: bottom-right;
+        top: 10px;
+        right: 10px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    .payment-paid {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .payment-unpaid {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .payment-pending {
+        background-color: #fff3cd;
+        color: #ff1717;
+    }
+    
+    /* New Pagination Styles */
+    .pagination-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 15px 20px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+    }
+    
+    .pagination-btn {
+        background: #ffca1d;
+        color: #2c3e50;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .page-info {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 14px;
+    }
+    
+    /* Add padding to main content to account for fixed pagination */
+    main.container {
+        padding-bottom: 80px;
+    }
+</style>
 
 </head>
+
 <body>
 
-<div class="container mt-4 mb-5">
-
-    <h3 class="fw-bold mb-3">Dashboard</h3>
-
-    <!-- Welcome Card -->
-    <div class="welcome-card mb-4">
-        Welcome 
-    </div>
-
-    <!-- Today's Overview -->
-    <h5 class="fw-bold mb-3">Today's Overview</h5>
-
-    <div class="row g-3 mb-4">
-        <div class="col-4">
-            <div class="overview-card">
-            <i class="fa-solid fa-indian-rupee-sign"></i>
-             <h4 class="fw-bold">24</h4>
-                <p class="text-muted small m-0">Cash</p>
-            </div>
-        </div>
-
-        <div class="col-4">
-            <div class="overview-card">
-                <i class="fa-solid fa-truck-fast"></i>
-                <h4 class="fw-bold">8</h4>
-                <p class="text-muted small m-0">Pick Up</p>
-            </div>
-        </div>
-
-        <div class="col-4">
-            <div class="overview-card">
-                <i class="fa-regular fa-circle-check" style="color: #000000;"></i>
-                <h4 class="fw-bold">16</h4>
-                <p class="text-muted small m-0">Delivery</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <h5 class="fw-bold mb-3">Quick Actions</h5>
-
-    <div class="row g-3">
-        <div class="col-6">
-            <div class="action-card" onclick="goToNewOrder()" style="cursor:pointer;">
-                <i class="fa-solid fa-cart-plus"></i>
-                <p class="fw-semibold mt-2">New Order</p>
-            </div>
-        </div>
-
-        <div class="col-6">
-            <div class="action-card" onclick="goToViewOrder()" style="cursor:pointer;">
-                <i class="fa-solid fa-list"></i>
-                <p class="fw-semibold mt-2">View Orders</p>
-            </div>
-        </div>
-
-        <div class="col-6">
-            <div class="action-card" onclick="goToPickup()" style="cursor:pointer;">
-                <i class="fa-solid fa-box-open"></i>
-                <p class="fw-semibold mt-2">Pickup Details</p>
-            </div>
-        </div>
-
-        <div class="col-6">
-            <div class="action-card" onclick="goToDeliveryStatus()" style="cursor:pointer;">
-              <i class="fa-solid fa-truck-ramp-box"></i>
-                <p class="fw-semibold mt-2">Delivery Status</p>
-            </div>
-        </div>
-    </div>
-
+<!-- HEADER -->
+<div class="header p-2 d-flex align-items-center shadow-sm">
+&nbsp;<button id="backButton" class="btn text-black"><i class="fas fa-arrow-left fa-xl me-3"></i></button>
+<h5 class="ms-2 text-black fw-bold mb-0">Delivery Status</h5>
 </div>
 
-<!-- Bottom Navigation -->
-<div class="bottom-nav">
-    <a href="index.html" class="active"><br>
-       <i class="fa-solid fa-house" style="color: #ff9500;"></i><br>Home
-    </a>
-    <a href="view_order.html"><br>
-        <i class="fa-solid fa-list" style="color: #ffa200;"></i><br>Orders
-    </a>
-    <a href="pickup_details.html"> <br>
-      <i class="fa-solid fa-box-open" style="color: #ffa200;"></i><br>Pickups
-    </a>
-    <a href="account.html"><br>
-        <i class="fa-solid fa-user-ninja" style="color: #ff9500;"></i><br>Account
-    </a>
+<main class="container mt-3">
+<div id="routeBadge"></div>
+<div id="orderList"></div>
+
+<div id="loadingSpinner" class="text-center mt-3">
+<div class="spinner-border text-primary"></div>
+<p>Loading Orders...</p>
 </div>
 
-<script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
+<div id="noOrdersMessage" class="text-center text-muted mt-4" style="display:none;">
+<i class="fa-solid fa-box-open fa-3x"></i>
+<p>No orders found.</p>
+</div>
+
+<!-- Updated Pagination -->
+<div class="pagination-container" id="paginationContainer" style="display: none">
+    <button class="pagination-btn" id="prevBtn">
+        <i class="fas fa-chevron-left me-1"></i>Prev
+    </button>
+    <span class="page-info" id="pageInfo">Page 1 of 1</span>
+    <button class="pagination-btn" id="nextBtn">
+        Next<i class="fas fa-chevron-right ms-1"></i>
+    </button>
+</div>
+</main>
+
+<!-- ROUTE SELECT MODAL -->
+<div class="modal fade" id="routeModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header"><h5>Select Route</h5></div>
+<div class="modal-body">
+
+<label class="form-label fw-bold">Choose Route:</label>
+<select id="routeDropdown" class="form-control">
+<option value="">-- Select Route --</option>
+</select>
+
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" id="cancelBtn">Close</button>
+<button class="btn btn-primary" id="applyRouteBtn">Apply Route</button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    
-    function goToNewOrder() {
-        window.location.href = "new_order.html";
-    }
-    function goToViewOrder() {
-        window.location.href = "view_order.html";
-    }
-    function goToDeliveryStatus() {
-        window.location.href = "delivery_status.html";
-    }
-    function goToPickup() {
-        window.location.href = "pick_up.html";
-    }
-</script>
+const APP_ID = "Mzk-";
+let selectedRouteId = "";
+let selectedRoute = "";
+let allOrders = [];
+let currentPage = 1;
+const PER_PAGE = 10;
 
+/****** OPEN MODAL ******/
+document.addEventListener("DOMContentLoaded", async () => {
+  new bootstrap.Modal(document.getElementById("routeModal")).show();
+  loadRoutes();
+});
+console.log("Delivery Status Page Loaded");
+/****** LOAD ROUTES ******/
+fetch("https://www.loginlogistics.in/main/driverapp/get_my_delivery_routes.php", {
+  method:"POST",
+  headers:{ "Content-Type":"application/json" },
+  body: JSON.stringify({ app_id:"Mzk-" })
+})
+.then(r=>r.json()).then(console.log);
+
+async function loadRoutes() {
+  try {
+    const res = await fetch("https://www.loginlogistics.in/main/driverapp/get_my_delivery_routes.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ app_id: APP_ID })
+    });
+
+    const data = await res.json();
+    console.log("📥 Route Response:", data);
+
+    let routes = data.routedet; // Correct array
+
+    if (!routes || routes.length === 0) {
+      alert("⚠ No routes found");
+      return;
+    }
+
+    const dropdown = document.getElementById("routeDropdown");
+
+    routes.forEach(r => {
+      const option = document.createElement("option");
+      option.value = r.rtid;      // Route ID
+      option.textContent = r.rt_name;  // Route Name
+      dropdown.appendChild(option);
+    });
+
+  } catch (err) {
+    console.error("Route Fetch Error:", err);
+    alert("Failed to load routes");
+  }
+}
+document.getElementById("backButton").addEventListener("click",()=>{ 
+  window.location.href="index.html";
+});
+
+document.getElementById("cancelBtn").addEventListener("click", () => {
+  window.location.href = "index.html";
+});
+
+
+/****** APPLY SELECTED ROUTE ******/
+document.getElementById("applyRouteBtn").addEventListener("click", () => {
+  selectedRouteId = document.getElementById("routeDropdown").value;
+  selectedRoute   = document.getElementById("routeDropdown")
+                   .options[document.getElementById("routeDropdown").selectedIndex].text;
+
+  if(!selectedRouteId){
+    alert("Please choose a route");
+    return;
+  }
+
+  document.getElementById("routeBadge").innerHTML =
+    `<div class='route-badge'>Route: ${selectedRoute}</div>`;
+
+  document.activeElement.blur();  // <<< fix
+  bootstrap.Modal.getInstance(document.getElementById("routeModal")).hide();
+  loadOrders();
+});
+
+
+/****** LOAD ORDERS ******/
+async function loadOrders(){
+  document.getElementById("loadingSpinner").style.display="block";
+  document.getElementById("orderList").innerHTML="";
+  document.getElementById("noOrdersMessage").style.display="none";
+
+  const res = await fetch("https://www.loginlogistics.in/main/driverapp/delivery-orders.php",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ app_id: APP_ID, route_id: selectedRouteId })
+  });
+
+  const data = await res.json();
+  allOrders = data.delOrders;
+
+  if(data.result==="1" && allOrders.length > 0){
+    renderOrders();
+    setupPagination();
+  } else {
+    document.getElementById("noOrdersMessage").style.display="block";
+  }
+
+  document.getElementById("loadingSpinner").style.display="none";
+}
+
+/****** GET PAYMENT STATUS CLASS ******/
+function getPaymentStatusClass(paymentStatus) {
+    if (!paymentStatus) return "payment-pending";
+    
+    const status = paymentStatus.toLowerCase();
+    if (status.includes('paid') || status === 'paid') {
+        return "payment-paid";
+    } else if (status.includes('unpaid') || status.includes('due') || status === 'unpaid') {
+        return "payment-unpaid";
+    } else {
+        return "payment-pending";
+    }
+}
+
+/****** GET PAYMENT STATUS TEXT ******/
+function getPaymentStatusText(paymentStatus) {
+    if (!paymentStatus) return "To Pay";
+    
+    const status = paymentStatus.toLowerCase();
+    if (status.includes('paid') || status === 'paid') {
+        return "Paid";
+    } else if (status.includes('unpaid') || status.includes('due') || status === 'unpaid') {
+        return "Unpaid";
+    } else {
+        return "Pending";
+    }
+}
+
+/****** RENDER ORDERS ******/
+function renderOrders(){
+  let start = (currentPage - 1) * PER_PAGE;
+  let pageOrders = allOrders.slice(start, start + PER_PAGE);
+  let html = "";
+
+  pageOrders.forEach(order =>{
+    const paymentStatusClass = getPaymentStatusClass(order.payment_status);
+    const paymentStatusText = getPaymentStatusText(order.payment_status);
+    
+    html += `
+<div class="card p-3 mb-2 position-relative">
+  <!-- Delivery Status Badge -->
+  <span class="status-badge ${order.courier_status.toLowerCase()==='delivered' ? 'status-green' : 'status-red'}">
+    ${order.courier_status}
+  </span> &nbsp;
+
+  <div class="order-row">
+    <div class="details-left">
+      <strong>POD:</strong> ${order.pod_no}<br>
+      <strong>Consignee:</strong> ${order.consignee}<br>
+      <strong>Consignor:</strong> ${order.consignor}<br>
+      <span class="amount-badge"><i class="fa-solid fa-rupee-sign"></i> ${order.total_amount}</span>
+    </div>
+
+    <div class="details-right">
+      <strong>Qty:</strong> ${order.total_qty}<br>
+      <strong>Stop:</strong> ${order.stop}<br>
+       &nbsp; &nbsp; &nbsp;<span class="payment-status-badge ${paymentStatusClass}">
+    ${paymentStatusText}
+  </span>
+    </div>
+  </div>
+
+  <!-- EDIT BUTTON ADDED HERE -->
+  <div class="order-actions">
+    <button class="btn btn-warning small-action-btn" onclick="editOrder('${order.ord_id}')">
+      <i class="fa-solid fa-pen"></i>
+    </button>
+  </div>
+</div>`;
+  });
+
+  document.getElementById("orderList").innerHTML = html;
+}
+
+/****** UPDATED PAGINATION ******/
+function setupPagination(){
+  const totalPages = Math.ceil(allOrders.length / PER_PAGE);
+  
+  if (totalPages > 1) {
+    document.getElementById("paginationContainer").style.display = "flex";
+    updatePaginationInfo();
+
+    document.getElementById("prevBtn").onclick = () => {
+      if(currentPage > 1){ 
+        currentPage--; 
+        renderOrders(); 
+        updatePaginationInfo(); 
+      }
+    };
+
+    document.getElementById("nextBtn").onclick = () => {
+      if(currentPage < totalPages){ 
+        currentPage++; 
+        renderOrders(); 
+        updatePaginationInfo(); 
+      }
+    };
+  } else {
+    document.getElementById("paginationContainer").style.display = "none";
+  }
+}
+
+/****** UPDATE PAGINATION INFO ******/
+function updatePaginationInfo() {
+  const totalPages = Math.ceil(allOrders.length / PER_PAGE);
+  document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
+  document.getElementById("prevBtn").disabled = currentPage === 1;
+  document.getElementById("nextBtn").disabled = currentPage === totalPages;
+}
+
+/****** EDIT ORDER - REDIRECT TO EDIT_DELIVERY.HTML ******/
+function editOrder(id){
+  localStorage.setItem("selectedOrderId", id);
+  window.location.href = "edit_delivery.html";
+}
+
+/****** VIEW ORDER ******/
+function viewOrder(id){
+  localStorage.setItem("selectedOrderId", id);
+  window.location.href="view_order.html";
+}
+</script>
 </body>
 </html>

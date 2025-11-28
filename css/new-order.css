@@ -47,3 +47,6 @@
     .payment-disabled:hover {
       background: #f9f9f9 !important;
     }
+    #backButton{
+      padding-left: 10px;
+    }

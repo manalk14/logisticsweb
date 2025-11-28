@@ -5,7 +5,7 @@
 
 /* Card Styles */
 .card-body {
-  padding: 10px !important;
+  padding: 5px !important;
 }
 
 .pod-title {
@@ -125,7 +125,7 @@
 
 /* Main Content */
 .main-content {
-  margin-bottom: 100px;
+  margin-bottom: 10px;
 }
 .header .fa-arrow-left {
   color: rgb(0, 0, 0);
@@ -145,4 +145,6 @@
   align-items: center;
   gap: 50px; /* adjust space between left and right sections */
   padding: 15px;
-}
+}  body {
+    padding-top: 60px; /* adjust height according to header height */
+  }

@@ -298,7 +298,7 @@ async function fetchOrder(orderId) {
   showLoading(true);
 
   const body = {
-    app_id: localStorage.getItem("app_id") || "Mzk-",
+    app_id: localStorage.getItem("app_id"),
     ord_id: orderId
   };
 

@@ -7,58 +7,64 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="css/delivery_status.css" rel="stylesheet"/>
 
 <style>
-.header { background: #ffca1d; position:sticky; top:0; z-index:100; }
-.order-row{display:flex; justify-content:space-between; width:100%; align-items:center;}
-.route-badge{background: #ffca1d; color:rgb(0, 0, 0); padding:8px; border-radius:8px; font-size:16px; margin-bottom:15px;}
-.status-badge{position:absolute; top:8px; right: 12px; padding:4px 6px; border-radius:4px; font-size:11px;}
-.amount-badge{background:#198754;color:white;padding:2px 5px;border-radius:4px;font-size:10px;margin-top:3px;}
-/* Updated for edit button positioning - moved upward */
-.order-actions {
-  position: absolute;
-  bottom: 6px;
-  right: 8px;
-}
-
-.status-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 5px 12px;
-  font-size: 14px;
-  border-radius: 12px;
-  font-weight: 600;
-  color: white;
-}
-
-.status-green {
-  background-color: #28a745 !important;  /* Green */
-}
-
-.status-red {
-  background-color: #dc3545 !important;  /* Red */
-}
-
-
-.small-action-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  border-radius: 6px;
-}
-
+    .payment-status-badge {
+        position: bottom-right;
+        top: 10px;
+        right: 10px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    .payment-paid {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .payment-unpaid {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .payment-pending {
+        background-color: #fff3cd;
+        color: #ff1717;
+    }
+    
+    /* Route Badge Styles */
+    .route-badge {
+        background-color: #ffca1d;
+        color: #2c3e50;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: inline-block;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .route-badge:hover {
+        background-color: #e6b800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .route-badge i {
+        margin-left: 8px;
+        font-size: 0.9em;
+    }
 </style>
+
 </head>
 
 <body>
 
 <!-- HEADER -->
 <div class="header p-2 d-flex align-items-center shadow-sm">
-<button id="backButton" class="btn text-black"><i class="fa-solid fa-arrow-left"></i></button>
+&nbsp;<button id="backButton" class="btn text-black"><i class="fas fa-arrow-left fa-xl me-3"></i></button>
 <h5 class="ms-2 text-black fw-bold mb-0">Delivery Status</h5>
 </div>
 
@@ -116,10 +122,32 @@ const PER_PAGE = 10;
 
 /****** OPEN MODAL ******/
 document.addEventListener("DOMContentLoaded", async () => {
-  new bootstrap.Modal(document.getElementById("routeModal")).show();
-  loadRoutes();
+  // Check if we have a previously selected route
+  const savedRouteId = localStorage.getItem("selectedRouteId");
+  const savedRouteName = localStorage.getItem("selectedRouteName");
+  
+  if (savedRouteId && savedRouteName) {
+    // If we have a saved route, use it directly
+    selectedRouteId = savedRouteId;
+    selectedRoute = savedRouteName;
+    
+    updateRouteBadge();
+    loadOrders();
+  } else {
+    // If no saved route, show the modal
+    showRouteModal();
+  }
 });
+
 console.log("Delivery Status Page Loaded");
+
+/****** SHOW ROUTE MODAL ******/
+function showRouteModal() {
+  loadRoutes().then(() => {
+    new bootstrap.Modal(document.getElementById("routeModal")).show();
+  });
+}
+
 /****** LOAD ROUTES ******/
 fetch("https://www.loginlogistics.in/main/driverapp/get_my_delivery_routes.php", {
   method:"POST",
@@ -147,11 +175,21 @@ async function loadRoutes() {
     }
 
     const dropdown = document.getElementById("routeDropdown");
+    dropdown.innerHTML = '<option value="">-- Select Route --</option>';
 
+    // Check if we have a saved route and pre-select it
+    const savedRouteId = localStorage.getItem("selectedRouteId");
+    
     routes.forEach(r => {
       const option = document.createElement("option");
       option.value = r.rtid;      // Route ID
       option.textContent = r.rt_name;  // Route Name
+      
+      // Pre-select if it matches saved route
+      if (savedRouteId && r.rtid === savedRouteId) {
+        option.selected = true;
+      }
+      
       dropdown.appendChild(option);
     });
 
@@ -160,11 +198,26 @@ async function loadRoutes() {
     alert("Failed to load routes");
   }
 }
+
+/****** UPDATE ROUTE BADGE ******/
+function updateRouteBadge() {
+  document.getElementById("routeBadge").innerHTML =
+    `<div class="route-badge" id="routeHeader" onclick="showRouteModal()">
+      Route: ${selectedRoute} <i class="fas fa-edit"></i>
+    </div>`;
+}
+
 document.getElementById("backButton").addEventListener("click",()=>{ 
+  // Clear the saved route when going back to index
+  localStorage.removeItem("selectedRouteId");
+  localStorage.removeItem("selectedRouteName");
   window.location.href="index.html";
 });
 
 document.getElementById("cancelBtn").addEventListener("click", () => {
+  // Clear the saved route when canceling
+  localStorage.removeItem("selectedRouteId");
+  localStorage.removeItem("selectedRouteName");
   window.location.href = "index.html";
 });
 
@@ -180,10 +233,13 @@ document.getElementById("applyRouteBtn").addEventListener("click", () => {
     return;
   }
 
-  document.getElementById("routeBadge").innerHTML =
-    `<div class='route-badge'>Route: ${selectedRoute}</div>`;
+  // Save the selected route to localStorage
+  localStorage.setItem("selectedRouteId", selectedRouteId);
+  localStorage.setItem("selectedRouteName", selectedRoute);
 
-  document.activeElement.blur();  // <<< fix
+  updateRouteBadge();
+
+  document.activeElement.blur();
   bootstrap.Modal.getInstance(document.getElementById("routeModal")).hide();
   loadOrders();
 });
@@ -214,6 +270,34 @@ async function loadOrders(){
   document.getElementById("loadingSpinner").style.display="none";
 }
 
+/****** GET PAYMENT STATUS CLASS ******/
+function getPaymentStatusClass(paymentStatus) {
+    if (!paymentStatus) return "payment-pending";
+    
+    const status = paymentStatus.toLowerCase();
+    if (status.includes('paid') || status === 'paid') {
+        return "payment-paid";
+    } else if (status.includes('unpaid') || status.includes('due') || status === 'unpaid') {
+        return "payment-unpaid";
+    } else {
+        return "payment-pending";
+    }
+}
+
+/****** GET PAYMENT STATUS TEXT ******/
+function getPaymentStatusText(paymentStatus) {
+    if (!paymentStatus) return "To Pay";
+    
+    const status = paymentStatus.toLowerCase();
+    if (status.includes('paid') || status === 'paid') {
+        return "Paid";
+    } else if (status.includes('unpaid') || status.includes('due') || status === 'unpaid') {
+        return "Unpaid";
+    } else {
+        return "Pending";
+    }
+}
+
 /****** RENDER ORDERS ******/
 function renderOrders(){
   let start = (currentPage - 1) * PER_PAGE;
@@ -221,35 +305,39 @@ function renderOrders(){
   let html = "";
 
   pageOrders.forEach(order =>{
+    const paymentStatusClass = getPaymentStatusClass(order.payment_status);
+    const paymentStatusText = getPaymentStatusText(order.payment_status);
+    
     html += `
 <div class="card p-3 mb-2 position-relative">
+  <!-- Delivery Status Badge -->
   <span class="status-badge ${order.courier_status.toLowerCase()==='delivered' ? 'status-green' : 'status-red'}">
     ${order.courier_status}
+  </span> &nbsp;
+
+  <div class="order-row">
+    <div class="details-left">
+      <strong>POD:</strong> ${order.pod_no}<br>
+      <strong>Consignee:</strong> ${order.consignee}<br>
+      <strong>Consignor:</strong> ${order.consignor}<br>
+      <span class="amount-badge"><i class="fa-solid fa-rupee-sign"></i> ${order.total_amount}</span>
+    </div>
+
+    <div class="details-right">
+      <strong>Qty:</strong> ${order.total_qty}<br>
+      <strong>Stop:</strong> ${order.stop}<br>
+       &nbsp; &nbsp; &nbsp;<span class="payment-status-badge ${paymentStatusClass}">
+    ${paymentStatusText}
   </span>
+    </div>
+  </div>
 
-
-
-
-<div class="order-row">
-<div class="details-left">
-<strong>POD:</strong> ${order.pod_no}<br>
-<strong>Consignee:</strong> ${order.consignee}<br>
-<strong>Consignor:</strong> ${order.consignor}<br>
-<span class="amount-badge"><i class="fa-solid fa-rupee-sign"></i> ${order.total_amount}</span>
-</div>
-
-<div class="details-right">
-<strong>Qty:</strong> ${order.total_qty}<br>
-<strong>Stop:</strong> ${order.stop}<br>
-</div>
-</div>
-
-<!-- EDIT BUTTON ADDED HERE -->
-<div class="order-actions">
-<button class="btn btn-warning small-action-btn" onclick="editOrder('${order.ord_id}')">
-<i class="fa-solid fa-pen"></i>
-</button>
-</div>
+  <!-- EDIT BUTTON ADDED HERE -->
+  <div class="order-actions">
+    <button class="btn btn-warning small-action-btn" onclick="editOrder('${order.ord_id}')">
+      <i class="fa-solid fa-pen"></i>
+    </button>
+  </div>
 </div>`;
   });
 
@@ -274,12 +362,14 @@ function setupPagination(){
 /****** EDIT ORDER - REDIRECT TO EDIT_DELIVERY.HTML ******/
 function editOrder(id){
   localStorage.setItem("selectedOrderId", id);
+  // The route is already saved in localStorage, so we'll keep it
   window.location.href = "edit_delivery.html";
 }
 
 /****** VIEW ORDER ******/
 function viewOrder(id){
   localStorage.setItem("selectedOrderId", id);
+  // The route is already saved in localStorage, so we'll keep it
   window.location.href="view_order.html";
 }
 </script>

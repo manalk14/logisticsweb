@@ -21,8 +21,8 @@
 
   <!-- Header -->
 <header class="p-3 fw-bold text-dark d-flex align-items-center" style="background-color:#ffca1d;">
-    &nbsp;&nbsp;&nbsp;<i class="fa-sharp fa-solid fa-arrow-left" id="backButton" style="cursor: pointer;"></i>
-    &nbsp;<span class="mb-0 fw-bold">New Customer Order</span>
+   <button id="backButton" class="btn text-black"><i class="fas fa-arrow-left fa-xl me-3"></i></button>
+  <h5 class="mb-0 fw-bold">New Customer Order</h5>
 </header>
 
   <!-- Tabs -->
@@ -225,7 +225,7 @@
     <!-- Right side -->
     <div class="footer-right ms-auto">
       <button class="btn btn-warning" id="nextTab">Next</button>
-      <button class="btn btn-success d-none" id="saveAll">Save</button>
+      <button class="btn btn-success d-none  ms-2" id="saveAll">Save</button>
     </div>
   </div>
 
@@ -339,8 +339,8 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
       return;
     }
 
-    const body = {
-      app_id: localStorage.getItem("app_id") || "Mzk-",
+    const body = {  
+      app_id: localStorage.getItem("app_id"),
       search: val,
       term: val
     };
@@ -566,7 +566,7 @@ function onConsigneeSelect(selectedItem) {
 // Function to convert destinationid to cityid by searching in city API
 function convertDestinationIdToCityId(destinationId, destinationName) {
   const body = {
-    app_id: localStorage.getItem("app_id") || "Mzk-",
+    app_id: localStorage.getItem("app_id"),
     search: destinationName,
     term: destinationName
   };
@@ -617,7 +617,7 @@ function loadRoutesForConsigneeCity(cityId) {
   }
 
   const body = {
-    app_id: localStorage.getItem("app_id") || "Mzk-",
+    app_id: localStorage.getItem("app_id"),
     cityid: cityId
   };
 
@@ -1190,8 +1190,7 @@ saveBtn.addEventListener('click', () => {
   const finalOrder = {
     consignor: consignor,
     consignees: consignees,
-    app_id: localStorage.getItem("app_id") || 
-    "Mzk-",
+    app_id: localStorage.getItem("app_id") ,
     savedAt: new Date().toISOString()
   };
 
