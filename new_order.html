@@ -12,55 +12,7 @@
   <link href="css/new-order.css" rel="stylesheet">
 
   <style>
-    .disabled-btn { opacity: 0.5; pointer-events: none; }
-    .is-invalid-field { border-color: #dc3545; }
-    .error-message { display:none; color:#dc3545; font-size:.875rem; margin-top:.25rem; }
-    .payment-box { border:1px solid #ddd; border-radius:.75rem; padding:1rem; cursor:pointer; transition:.2s; }
-    .payment-box:hover { background:#f9f9f9; }
-    .payment-box.active { border-color:#0d6efd; box-shadow:0 0 0 .2rem rgba(13,110,253,.15); background:#e7f1ff; }
-    .fixed-bottom-bar { position:sticky; bottom:0; background:#fff; border-top:1px solid #eee; padding:.75rem; }
-    .section-title { font-weight:600; }
-    .autocomplete-wrapper { position: relative; }
-    .autocomplete-items {
-      position: absolute;
-      border: 1px solid #ddd;
-      border-top: none;
-      z-index: 9999;
-      background: white;
-      width: 100%;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    .autocomplete-item {
-      padding: 8px 12px;
-      cursor: pointer;
-      border-bottom: 1px solid #f1f1f1;
-    }
-    .autocomplete-item:hover, .autocomplete-item.active {
-      background: #f1f1f1;
-    }
-    .no-results {
-      padding: 8px 12px;
-      color: #6c757d;
-      font-style: italic;
-      text-align: center;
-    }
-    .pod-no-field.optional {
-      opacity: 0.7;
-    }
-    .pod-no-field.optional label::after {
-      content: " (Optional)";
-      color: #6c757d;
-      font-weight: normal;
-    }
-    .payment-disabled {
-      opacity: 0.5;
-      pointer-events: none;
-      cursor: not-allowed;
-    }
-    .payment-disabled:hover {
-      background: #f9f9f9 !important;
-    }
+   
   </style>
 </head>
 <body>
@@ -68,10 +20,10 @@
 <div class="container-fluid p-0">
 
   <!-- Header -->
-  <header class="p-3 bg-warning fw-bold text-dark d-flex align-items-center">
+<header class="p-3 fw-bold text-dark d-flex align-items-center" style="background-color:#ffca1d;">
     &nbsp;&nbsp;&nbsp;<i class="fa-sharp fa-solid fa-arrow-left" id="backButton" style="cursor: pointer;"></i>
     &nbsp;<span class="mb-0 fw-bold">New Customer Order</span>
-  </header>
+</header>
 
   <!-- Tabs -->
   <ul class="nav nav-tabs mt-3 mx-3" id="orderTabs" role="tablist">
@@ -312,7 +264,7 @@ document.getElementById('backButton').addEventListener('click', () => {
 });
 
 /* -------------------------
-   Autocomplete Functionality with Keyboard Navigation
+   Autocomplete Functionality with Keyboard Navigation - FIXED
 -------------------------*/
 function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, onSelectCallback = null) {
   const input = document.getElementById(inputId);
@@ -328,8 +280,15 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
     }
   }
 
-  function setActive(items, direction) {
+  // Helper function to remove active class from all items
+  function removeActive(items) {
     if (!items) return;
+    items.forEach(item => item.classList.remove('active'));
+  }
+
+  // Helper function to set active item
+  function setActive(items, direction) {
+    if (!items || items.length === 0) return;
     
     removeActive(items);
     
@@ -343,12 +302,12 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
     
     if (currentFocus >= 0 && currentFocus < items.length) {
       items[currentFocus].classList.add('active');
-      items[currentFocus].scrollIntoView({ block: 'nearest' });
+      // Scroll into view with better positioning
+      items[currentFocus].scrollIntoView({ 
+        block: 'nearest',
+        behavior: 'smooth'
+      });
     }
-  }
-
-  function removeActive(items) {
-    items.forEach(item => item.classList.remove('active'));
   }
 
   function selectActiveItem(items) {
@@ -416,6 +375,7 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
           const div = document.createElement("div");
           div.className = "autocomplete-item";
           div.textContent = text;
+          div.setAttribute('data-value', id);
 
           div.onclick = () => {
             input.value = text;
@@ -444,20 +404,26 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
           currentList.appendChild(div);
         }
       });
+
+      // Reset focus when new list is created
+      currentFocus = -1;
     })
     .catch(err => {
       console.error('Error fetching data:', err);
     });
   });
 
-  // Keyboard navigation
+  // Improved keyboard navigation
   input.addEventListener("keydown", function(e) {
-    const items = currentList ? currentList.querySelectorAll('.autocomplete-item') : null;
+    const items = currentList ? currentList.querySelectorAll('.autocomplete-item:not(.no-results)') : null;
     
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (items && items.length > 0) {
         setActive(items, 'down');
+      } else if (currentList) {
+        // If no items but dropdown exists, try to fetch
+        input.dispatchEvent(new Event('input'));
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
@@ -466,17 +432,29 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
       }
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (items && items.length > 0) {
+      if (items && items.length > 0 && currentFocus > -1) {
         selectActiveItem(items);
+      } else {
+        // If no selection, just close the dropdown
+        removeCurrentList();
       }
     } else if (e.key === 'Escape') {
+      e.preventDefault();
+      removeCurrentList();
+    } else if (e.key === 'Tab') {
+      // Close dropdown when tabbing away
       removeCurrentList();
     }
   });
 
   // Close dropdown when input loses focus
   input.addEventListener("blur", function() {
-    setTimeout(removeCurrentList, 150);
+    setTimeout(() => {
+      // Only remove if user didn't click on an item
+      if (currentList && !currentList.matches(':hover')) {
+        removeCurrentList();
+      }
+    }, 200);
   });
 
   // Add event listener for manual clearing
@@ -717,6 +695,15 @@ function showRouteDropdown(routes, routeInput) {
     dropdown.appendChild(div);
   });
 
+  // Helper function for route dropdown
+  function setActiveDropdownItem(items, index) {
+    items.forEach(item => item.classList.remove('active'));
+    if (index >= 0 && index < items.length) {
+      items[index].classList.add('active');
+      items[index].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
   // Keyboard navigation for route dropdown
   routeInput.addEventListener("keydown", function(e) {
     const items = dropdown.querySelectorAll('.autocomplete-item');
@@ -744,14 +731,6 @@ function showRouteDropdown(routes, routeInput) {
       dropdown.remove();
     }
   });
-
-  function setActiveDropdownItem(items, index) {
-    items.forEach(item => item.classList.remove('active'));
-    if (index >= 0 && index < items.length) {
-      items[index].classList.add('active');
-      items[index].scrollIntoView({ block: 'nearest' });
-    }
-  }
 }
 
 function initAutocomplete() {
@@ -1120,6 +1099,7 @@ function handleNextConsignee() {
 
   alert("Consignee added. You can enter another now.");
 }
+
 function showSuccessMessage() {
   const successDiv = document.createElement('div');
   successDiv.className = 'success-message';
@@ -1151,7 +1131,6 @@ function showSuccessMessage() {
     successDiv.remove();
   }, 3000);
 }
-
 
 /* SAVE ALL - UPDATED WITH CONSIGNOR ID CHECK */
 saveBtn.addEventListener('click', () => {
@@ -1228,49 +1207,47 @@ saveBtn.addEventListener('click', () => {
   .then(r => {
     return r.json();
   })
-.then(data => {
-  console.log("Order saved response:", data);
+  .then(data => {
+    console.log("Order saved response:", data);
 
-  showSuccessMessage();
+    showSuccessMessage();
 
-  // Switch to consignor tab
-  const t = new bootstrap.Tab(tab1Btn);
-  t.show();
+    // Switch to consignor tab
+    const t = new bootstrap.Tab(tab1Btn);
+    t.show();
 
-  // Reset bottom buttons
-  saveBtn.classList.add('d-none');
-  backBtn.classList.add('d-none');
-  nextBtn.classList.remove('d-none');
+    // Reset bottom buttons
+    saveBtn.classList.add('d-none');
+    backBtn.classList.add('d-none');
+    nextBtn.classList.remove('d-none');
 
-  // Remove second NEXT button if exists
-  const nc = document.getElementById("nextConsignee");
-  if (nc) nc.remove();
+    // Remove second NEXT button if exists
+    const nc = document.getElementById("nextConsignee");
+    if (nc) nc.remove();
 
-  // Disable consignee tab again
-  tab2Btn.classList.add('disabled');
-  tab2Btn.removeAttribute('data-bs-toggle');
-  tab2Btn.removeAttribute('data-bs-target');
+    // Disable consignee tab again
+    tab2Btn.classList.add('disabled');
+    tab2Btn.removeAttribute('data-bs-toggle');
+    tab2Btn.removeAttribute('data-bs-target');
 
-  // Clear fields
-  document.querySelectorAll('input, textarea').forEach(field => {
-    field.value = "";
-    field.classList.remove("is-invalid-field");
-    delete field.dataset.selectedId;
-    delete field.dataset.originalValue;
-    delete field.dataset.cityId;
+    // Clear fields
+    document.querySelectorAll('input, textarea').forEach(field => {
+      field.value = "";
+      field.classList.remove("is-invalid-field");
+      delete field.dataset.selectedId;
+      delete field.dataset.originalValue;
+      delete field.dataset.cityId;
+    });
+
+    // Reset state
+    consignees = [];
+    selectedPayment = null;
+    document.querySelectorAll(".payment-box").forEach(b => b.classList.remove("active"));
+  })
+  .catch(err => {
+    console.error("Error saving order:", err);
   });
-
-  // Reset state
-  consignees = [];
-  selectedPayment = null;
-  document.querySelectorAll(".payment-box").forEach(b => b.classList.remove("active"));
-})
-.catch(err => {
-  console.error("Error saving order:", err);
 });
-
-
- });
 
 // Add event listener for the company name field to clear POD No validation when consigner is selected
 document.getElementById('companyName').addEventListener('change', function() {

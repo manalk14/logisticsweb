@@ -6,145 +6,9 @@
     <title>Pickup Orders</title>
 
     <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        /* Header Styles */
-        .header { 
-            background: #ff7b00; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-        }
-        
-        /* Route Badge */
-        .route-badge {
-            background: #ff7b00; 
-            color: rgb(0, 0, 0); 
-            padding: 8px; 
-            border-radius: 8px; 
-            font-size: 16px; 
-            margin-bottom: 15px;
-        }
-        
-        /* Order Card Styles */
-        .order-card {
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-            border: none;
-            transition: transform 0.2s;
-        }
-        
-        .order-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .order-row {
-            display: flex; 
-            justify-content: space-between; 
-            width: 100%; 
-            align-items: center;
-        }
-        
-        /* Payment Status Badges */
-        .payment-status {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .text-success { background-color: #d4edda; color: #155724; }
-        .text-warning { background-color: #fff3cd; color: #856404; }
-        .text-muted { background-color: #f8f9fa; color: #6c757d; }
-        
-        /* Quantity Display */
-        .quantity-section {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 10px;
-        }
-        
-        .quantity-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        
-        .quantity-label {
-            font-weight: 500;
-            color: #495057;
-        }
-        
-        .quantity-value {
-            font-weight: 600;
-            color: #ff7b00;
-        }
-        
-        /* Action Buttons */
-        .small-action-btn {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            border-radius: 6px;
-        }
-        
-        /* Loading and No Orders */
-        .loading-spinner {
-            text-align: center;
-            padding: 40px 0;
-        }
-        
-        .no-orders {
-            text-align: center;
-            padding: 40px 0;
-            color: #6c757d;
-        }
-        
-        /* Pagination */
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 0;
-            gap: 15px;
-        }
-        
-        /* Order Date */
-        .order-date {
-            font-size: 12px;
-            color: #6c757d;
-        }
-        
-        /* Details Layout */
-        .details-left {
-            flex: 1;
-        }
-        
-        .details-right {
-            flex: 1;
-            text-align: right;
-        }
-        
-        .pod-title {
-            font-weight: 700;
-            font-size: 16px;
-            color: #343a40;
-        }
-        
-        /* Spacing for fixed header */
-        .header-spacing {
-            height: 60px;
-        }
-    </style>
+    <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
+    <link rel="stylesheet" href="css/pick_up.css" />
 </head>
 
 <body>
@@ -156,8 +20,7 @@
         <h5 class="ms-2 text-black fw-bold mb-0">Pickup Orders</h5>
     </div>
 
-    <!-- Spacing below fixed header -->
-    <div class="header-spacing"></div>
+ 
 
     <main class="container mt-3">
         <!-- Route Badge -->
@@ -207,7 +70,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
 
     <script>
         const APP_ID = "Mzk-";
@@ -229,11 +92,11 @@
             });
             
             // Cancel button handler
-            document.getElementById("cancelBtn").addEventListener("click", () => {
-                window.location.href = "index.html";
-            });
+           
         });
-
+document.getElementById("cancelBtn").addEventListener("click", () => {
+  window.location.href = "index.html";
+});
         // Load available routes
         async function loadRoutes() {
             try {
