@@ -1,15 +1,15 @@
     body {
       background-color: #f8f9fa;
     }
-    .app-header {
+    /* .app-header{
       background-color: #ffc107;
-      color: #212529;
-      padding: 20px 5px;
+      color: #000000;
+      padding: 10px 5px;
       font-weight: bold;
       font-size:1.3rem;
       display: flex;
       align-items: center;
-    }
+    } */
     .app-header i {
       cursor: pointer;
     }
