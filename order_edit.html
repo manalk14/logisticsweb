@@ -8,16 +8,238 @@
   <!-- Bootstrap -->
   <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
-  <link rel="stylesheet" href="css/order_edit.css">
-
-
+  
+  <style>
+    /* Custom Header Styles */
+    .app-header {
+      background: #ffca1d;
+      color: rgb(0, 0, 0);
+      padding: 15px 20px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+    }
+    
+    .app-header i {
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-size: 1.2rem;
+    }
+  
+    
+    .header-title {
+      flex-grow: 1;
+      text-align: left;
+      margin-right: 40px; /* To balance the back button space */
+      font-style: bold;
+    }
+    
+    .main-content {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    /* Form Styles */
+    .card {
+      border: none;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .section-title {
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eaeaea;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section-title i {
+      color: #ffca1d;
+    }
+    
+    .form-label {
+      font-weight: 500;
+      color: #ffa034;
+      margin-bottom: 8px;
+    }
+    
+    .form-control {
+      border-radius: 8px;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      border-color: #ffca1d;
+    }
+    
+    .error-message {
+      color: #e74c3c;
+      font-size: 0.875rem;
+      margin-top: 5px;
+      display: none;
+    }
+    
+    .is-invalid-field {
+      border-color: #e74c3c !important;
+    }
+    
+    .is-invalid-field + .error-message {
+      display: block;
+    }
+    
+    .payment-box {
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 15px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background-color: white;
+    }
+    
+    .payment-box:hover {
+      border-color: #ffca1d;
+      transform: translateY(-3px);
+    }
+    
+    .payment-box.active {
+      border-color: #000000;
+    }
+    
+    .payment-disabled {
+      opacity: 0.5;
+      cursor: not-allowed !important;
+    }
+    
+    .payment-disabled:hover {
+      border-color: #e0e0e0;
+      transform: none;
+    }
+    
+    .fixed-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: white;
+      padding: 15px;
+      z-index: 100;
+    }
+    
+    .btn-save {
+      background: #ffca1d;
+      color: rgb(0, 0, 0);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    .btn-save:hover {
+      transform: translateY(-2px);
+    }
+    
+    .loading-spinner {
+      text-align: center;
+      padding: 40px 20px;
+      color: #ffca1d;
+    }
+    
+    .order-not-found {
+      text-align: center;
+      padding: 40px 20px;
+      color: #ffa034;
+    }
+    
+    .order-not-found i {
+      color: #f39c12;
+      margin-bottom: 20px;
+    }
+    
+    .autocomplete-wrapper {
+      position: relative;
+    }
+    
+    .autocomplete-items {
+      position: absolute;
+      border: 1px solid #ddd;
+      border-top: none;
+      z-index: 99;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: white;
+      border-radius: 0 0 8px 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    
+    }
+    
+    .autocomplete-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    
+    .autocomplete-item:hover, .autocomplete-item.active {
+      background-color: rgba(255, 202, 29, 0.1);
+    }
+    
+    .no-results {
+      padding: 10px 15px;
+      color: #777;
+      font-style: italic;
+    }
+    
+    .optional .form-label::after {
+      content: " (Optional)";
+      font-weight: normal;
+      color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+      .app-header {
+        padding: 12px 15px;
+        font-size: 1.1rem;
+      }
+      
+      .card-body {
+        padding: 15px;
+      }
+      
+      .section-title {
+        font-size: 1.1rem;
+      }
+      
+      .payment-box {
+        padding: 10px 5px;
+        font-size: 0.9rem;
+      }
+      
+      .payment-box i {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-  <!-- Header -->
+  <!-- Updated Header -->
   <header class="app-header">
-    <i class="fa-solid fa-arrow-left me-2" id="backButton"></i> &nbsp;Edit Order
+    <i class="fa-solid fa-arrow-left me-2" id="backButton"></i>
+    <div class="header-title">Edit Order</div>
   </header>
 
   <main class="container my-4 pb-5 main-content">
@@ -855,7 +1077,7 @@ printUpdatedDataToConsole(body);
 
 // Your existing fetch call
 try {
-  const response = await fetch(BASE_URL + API_ENDPOINTS.editOrder, {
+  const response = await fetch("https://www.loginlogistics.in/main/driverapp/action/update-order.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
