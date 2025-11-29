@@ -384,7 +384,7 @@
                     <div class="col-4"><input type="number" class="form-control box-qty" data-size="large" placeholder="Qty" min="0"></div>
                     <div class="col-4"><input type="number" class="form-control box-price" data-size="large" placeholder="Price" min="0"></div>
                   </div>
-                  
+             
                 </div>
               </div>
             </div>
@@ -627,7 +627,7 @@ function populateForm(order) {
 -------------------------*/
 function populatePackagingData(order) {
   // Box data
-  const boxSizes = ['small', 'medium', 'large', 'xlarge'];
+  const boxSizes = ['small', 'medium', 'large'];
   
   boxSizes.forEach(size => {
     const qtyField = `box_${size}_qty`;
@@ -645,7 +645,7 @@ function populatePackagingData(order) {
   });
 
   // Cover data
-  const coverSizes = ['small', 'medium', 'large', 'xlarge'];
+  const coverSizes = ['small', 'medium', 'large'];
   
   coverSizes.forEach(size => {
     const qtyField = `cover_${size}_qty`;
@@ -904,7 +904,7 @@ function selectPayment(type) {
 }
 
 /* -------------------------
-   Save Changes - UPDATED FOR PROPER API STRUCTURE
+   Save Changes - UPDATED FOR EXACT API FORMAT
 -------------------------*/
 document.getElementById("saveButton").addEventListener("click", async () => {
   if (!currentOrderId) {
@@ -955,23 +955,56 @@ document.getElementById("saveButton").addEventListener("click", async () => {
     return;
   }
 
+  // Collect box data
+  const boxData = {};
+  const boxSizes = ['small', 'medium', 'large'];
+  
+  boxSizes.forEach(size => {
+    const qtyInput = document.querySelector(`.box-qty[data-size='${size}']`);
+    const priceInput = document.querySelector(`.box-price[data-size='${size}']`);
+    
+    boxData[size] = {
+      qty: parseInt(qtyInput?.value || 0),
+      price: parseInt(priceInput?.value || 0)
+    };
+  });
+
+  // Collect cover data
+  const coverData = {};
+  const coverSizes = ['small', 'medium', 'large'];
+  
+  coverSizes.forEach(size => {
+    const qtyInput = document.querySelector(`.cover-qty[data-size='${size}']`);
+    const priceInput = document.querySelector(`.cover-price[data-size='${size}']`);
+    
+    coverData[size] = {
+      qty: parseInt(qtyInput?.value || 0),
+      price: parseInt(priceInput?.value || 0)
+    };
+  });
+
   // Prepare the data in the exact format expected by your API
   const requestData = {
     app_id: localStorage.getItem("app_id"),
     ord_id: currentOrderId,
-    consignee: document.getElementById("cName").value,
-    consignor: document.getElementById("companyName").value,
-    // Add other fields that your API expects
+    consignor_name: document.getElementById("companyName").value,
+    consignorId: document.getElementById("companyName").dataset.selectedId || "",
     supp_inv_no: document.getElementById("supplierInvoice").value,
     pod_no: document.getElementById("podNo").value,
     consignor_city: document.getElementById("city").value,
+    consignor_cityId: document.getElementById("city").dataset.selectedId || "",
     consignor_address: document.getElementById("address").value,
     consignor_phone: document.getElementById("phone").value,
+    consignee_name: document.getElementById("cName").value,
+    consigneeId: document.getElementById("cName").dataset.selectedId || "",
     consignee_city: document.getElementById("cCity").value,
+    consignee_cityId: document.getElementById("cCity").dataset.selectedId || document.getElementById("cCity").dataset.destinationid || "",
     route: document.getElementById("cRoute").value,
     consignee_phone: document.getElementById("cPhone").value,
     consignee_address: document.getElementById("cAddress").value,
-    payment_type: selectedPayment
+    payment_type: selectedPayment,
+    box_data: JSON.stringify(boxData),
+    cover_data: JSON.stringify(coverData)
   };
 
   console.log("Sending data to API:", requestData);
