@@ -6,13 +6,163 @@
     <title>Dashboard</title>
     <link href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
-    <link href="css/index.css" rel="stylesheet"/>
-
+    <style>
+        /* Custom Styles */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 80px;
+        }
+    
+        .welcome-card {
+            background: linear-gradient(135deg, #ffca1d, #ffb300);
+            color: #000;
+            font-style: roboto; ;
+            padding: 10px;
+            border-radius: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(255, 202, 29, 0.3);
+        }
+        
+        .overview-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .overview-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .overview-card i {
+            font-size: 1.5rem;
+            color: #ffca1d;
+            margin-bottom: 10px;
+        }
+        
+        .overview-card h4 {
+            color: #000;
+            margin: 5px 0;
+            font-size: 1.3rem;
+        }
+        
+        .action-card {
+            background: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-3px);
+            border-color: #ffca1d;
+            box-shadow: 0 4px 15px rgba(255, 202, 29, 0.2);
+        }
+        
+        .action-card i {
+            font-size: 2rem;
+            color: #ffca1d;
+        }
+        
+        .action-card p {
+            color: #000;
+            margin: 10px 0 0 0;
+            font-size: 0.9rem;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 20px;
+            color: #ffca1d;
+        }
+        
+        .error-message {
+            background: #ffeaa7;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        
+        .refresh-btn {
+            background: #ffca1d;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 2px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .bottom-nav a {
+            text-decoration: none;
+            color: #666;
+            text-align: center;
+            font-size: 0.8rem;
+            flex: 1;
+            padding: 8px 0;
+        }
+        
+        .bottom-nav a.active {
+            color: #ffca1d;
+        }
+        
+        .bottom-nav i {
+            font-size: 1.2rem;
+            margin-bottom: 1px;
+        }
+        
+        @media (max-width: 576px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .overview-card {
+                padding: 12px 8px;
+            }
+            
+            .overview-card h4 {
+                font-size: 1.2rem;
+            }
+            
+            .action-card {
+                padding: 15px 10px;
+            }
+            
+            .action-card i {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div class="container mt-4 ">
-
+<div class="container mt-4 mb-4">
     <h3 class="fw-bold mb-3">Dashboard</h3>
 
     <!-- Welcome Card -->
@@ -23,27 +173,45 @@
     <!-- Today's Overview -->
     <h5 class="fw-bold mb-3">Today's Overview</h5>
 
-    <div class="row g-3 mb-4">
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-spinner">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading dashboard data...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-message" style="display: none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p id="errorText" class="mb-2">Unable to load dashboard data</p>
+        <button class="refresh-btn" onclick="loadDashboardData()">
+            <i class="fas fa-redo me-1"></i>Try Again
+        </button>
+    </div>
+
+    <!-- Overview Cards -->
+    <div id="overviewCards" class="row g-3 mb-4" style="display: none;">
         <div class="col-4">
             <div class="overview-card">
-            <i class="fa-solid fa-indian-rupee-sign"></i>
-             <h4 class="fw-bold">24</h4>
+                <i class="fa-solid fa-indian-rupee-sign"></i>
+                <h4 class="fw-bold" id="totalCash">0</h4>
                 <p class="text-muted small m-0">Cash</p>
             </div>
         </div>
 
         <div class="col-4">
             <div class="overview-card">
-               <i class="fa-solid fa-boxes-stacked"></i>
-                <h4 class="fw-bold">8</h4>
-                <p class="text-muted small m-0">Pick Up</p>
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <h4 class="fw-bold" id="totalOrders">0</h4>
+                <p class="text-muted small m-0">Orders</p>
             </div>
         </div>
 
         <div class="col-4">
             <div class="overview-card">
-               <i class="fa-solid fa-truck-fast"></i>
-                <h4 class="fw-bold">16</h4>
+                <i class="fa-solid fa-truck-fast"></i>
+                <h4 class="fw-bold" id="totalPickups">0</h4>
                 <p class="text-muted small m-0">Delivery</p>
             </div>
         </div>
@@ -76,34 +244,33 @@
 
         <div class="col-6">
             <div class="action-card" onclick="goToDeliveryStatus()" style="cursor:pointer;">
-              <i class="fa-solid fa-truck-ramp-box"></i>
+                <i class="fa-solid fa-truck-ramp-box"></i>
                 <p class="fw-semibold mt-2">Delivery Status</p>
             </div>
         </div>
     </div>
-
 </div>
 
 <!-- Bottom Navigation -->
-<!-- <div class="bottom-nav">
+<div class="bottom-nav">
     <a href="index.html" class="active"><br>
-       <i class="fa-solid fa-house" style="color: #ff9500;"></i><br>Home
+        <i class="fa-solid fa-house"></i><br>Home
     </a>
     <a href="view_order.html"><br>
-        <i class="fa-solid fa-list" style="color: #ffa200;"></i><br>Orders
+        <i class="fa-solid fa-list"></i><br>Orders
     </a>
-    <a href="pickup_details.html"> <br>
-      <i class="fa-solid fa-box-open" style="color: #ffa200;"></i><br>Pickups
+    <a href="cash_in_hand.html"> <br>
+        <i class="fa-solid fa-box-open"></i><br>Cash
     </a>
     <a href="account.html"><br>
-        <i class="fa-solid fa-user-ninja" style="color: #ff9500;"></i><br>Account
+        <i class="fa-solid fa-user-ninja"></i><br>Account
     </a>
-</div> -->
+</div>
 
 <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.min.js"></script>
 
 <script>
-    // Authentication check
+    // Authentication check and data loading
     document.addEventListener('DOMContentLoaded', function() {
         checkAuthentication();
     });
@@ -111,24 +278,123 @@
     function checkAuthentication() {
         const appId = localStorage.getItem('app_id');
         
-        // If app_id is not present, redirect to login page
         if (!appId) {
-            window.location.href = 'login.html'; // Change this to your actual login page
-            return;
-        }
-        
-        // Optional: You can also validate the app_id format if needed
-        // For example, check if it starts with "Mzk-"
-        if (!appId.startsWith('Mzk-')) {
-            localStorage.removeItem('app_id'); // Clear invalid app_id
             window.location.href = 'login.html';
             return;
         }
         
-        // If authenticated, you can optionally display the app_id or user info
+        if (!appId.startsWith('Mzk-')) {
+            localStorage.removeItem('app_id');
+            window.location.href = 'login.html';
+            return;
+        }
+        
         console.log('User authenticated with app_id:', appId);
+        loadDashboardData();
     }
     
+    // Load dashboard data from API
+    async function loadDashboardData() {
+        const appId = localStorage.getItem('app_id');
+        
+        if (!appId) {
+            showErrorState('Authentication required');
+            return;
+        }
+        
+        showLoadingState();
+        
+        try {
+            const response = await fetch("https://www.loginlogistics.in/main/driverapp/get_home_values.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ app_id: appId })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log("Dashboard API Response:", data);
+            
+            if (data && data.result === "1") {
+                processDashboardData(data);
+            } else {
+                showErrorState(data.message || "No data available");
+            }
+            
+        } catch (error) {
+            console.error("Error loading dashboard data:", error);
+            showErrorState("Network error. Please check your connection.");
+        }
+    }
+    
+    // Process dashboard data
+    function processDashboardData(data) {
+        try {
+            // Update cash amount (remove commas and format)
+            const cashAmount = parseFloat((data.ttl_paid_amt || "0").replace(/,/g, "")) || 0;
+            document.getElementById('totalCash').textContent = formatCurrency(cashAmount);
+            
+            // Update total orders
+            const totalOrders = parseInt(data.ttl_orders || "0") || 0;
+            document.getElementById('totalOrders').textContent = totalOrders.toLocaleString();
+            
+            // Update total pickups/deliveries
+            const totalPickups = parseInt(data.ttl_del_orders || "0") || 0;
+            document.getElementById('totalPickups').textContent = totalPickups.toLocaleString();
+            
+            showOverviewCards();
+            
+        } catch (error) {
+            console.error("Error processing dashboard data:", error);
+            showErrorState("Error processing data");
+        }
+    }
+    
+    // Format currency with proper Indian format
+    function formatCurrency(amount) {
+        if (amount >= 100000) {
+            // Format in lakhs
+            const lakhs = (amount / 100000).toFixed(1);
+            return lakhs.endsWith('.0') ? `${lakhs.split('.')[0]}L` : `${lakhs}L`;
+        } else if (amount >= 1000) {
+            // Format in thousands
+            const thousands = (amount / 1000).toFixed(1);
+            return thousands.endsWith('.0') ? `${thousands.split('.')[0]}K` : `${thousands}K`;
+        } else {
+            // Show full amount for smaller values
+            return Math.round(amount).toLocaleString();
+        }
+    }
+    
+    // Show loading state
+    function showLoadingState() {
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('overviewCards').style.display = 'none';
+    }
+    
+    // Show error state
+    function showErrorState(message) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('overviewCards').style.display = 'none';
+        document.getElementById('errorText').textContent = message;
+    }
+    
+    // Show overview cards
+    function showOverviewCards() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('overviewCards').style.display = 'flex';
+    }
+    
+    // Navigation functions
     function goToNewOrder() {
         if (!localStorage.getItem('app_id')) {
             window.location.href = 'login.html';
@@ -160,6 +426,9 @@
         }
         window.location.href = "cash_in_hand.html";
     }
+    
+    // Auto-refresh dashboard every 2 minutes
+    setInterval(loadDashboardData, 120000);
 </script>
 
 </body>

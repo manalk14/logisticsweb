@@ -1,120 +1,220 @@
-    body {
-      background-color: #f8f9fa;
-    }
-    .app-header{
-      background-color: #ffc107;
-      color: #000000;
-      padding: 10px 5px;
-      font-weight: bold;
-      font-size:1.3rem;
+ .app-header {
+      background: #ffca1d;
+      color: rgb(0, 0, 0);
+      padding: 15px 20px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       display: flex;
       align-items: center;
     }
+    
     .app-header i {
       cursor: pointer;
+      transition: transform 0.2s;
+      font-size: 1.2rem;
     }
+  
+    
+    .header-title {
+      flex-grow: 1;
+      text-align: left;
+      margin-right: 40px; /* To balance the back button space */
+      font-style: bold;
+    }
+    
+    .main-content {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    /* Form Styles */
+    .card {
+      border: none;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
     .section-title {
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-size: 1.1rem;
-      color: #000000;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eaeaea;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
+    
+    .section-title i {
+      color: #ffca1d;
+    }
+    
+    .form-label {
+      font-weight: 500;
+      color: #ffa034;
+      margin-bottom: 8px;
+    }
+    
+    .form-control {
+      border-radius: 8px;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      border-color: #ffca1d;
+    }
+    
     .error-message {
-      color: red;
-      font-size: 0.85rem;
+      color: #e74c3c;
+      font-size: 0.875rem;
+      margin-top: 5px;
       display: none;
     }
-    .invalid-input {
-      border-color: red !important;
+    
+    .is-invalid-field {
+      border-color: #e74c3c !important;
     }
+    
+    .is-invalid-field + .error-message {
+      display: block;
+    }
+    
     .payment-box {
-      border: 2px solid #ccc;
-      padding: 10px;
+      border: 2px solid #e0e0e0;
       border-radius: 10px;
+      padding: 15px 10px;
+      text-align: center;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
+      background-color: white;
     }
+    
+    .payment-box:hover {
+      border-color: #ffca1d;
+      transform: translateY(-3px);
+    }
+    
     .payment-box.active {
-      border-color: #ffc107;
-      background-color: #fff3cd;
+      border-color: #000000;
     }
+    
+    .payment-disabled {
+      opacity: 0.5;
+      cursor: not-allowed !important;
+    }
+    
+    .payment-disabled:hover {
+      border-color: #e0e0e0;
+      transform: none;
+    }
+    
     .fixed-footer {
       position: fixed;
       bottom: 0;
       left: 0;
-      width: 100%;
-      background: #fff;
-      border-top: 1px solid #dee2e6;
-      padding: 10px 15px;
+      right: 0;
+      background-color: white;
+      padding: 15px;
+      z-index: 100;
     }
+    
     .btn-save {
-      background-color: #6c757d;
-      color: #fff;
+      background: #ffca1d;
+      color: rgb(0, 0, 0);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-weight: 600;
+      transition: all 0.3s;
     }
-    .btn-continue {
-      background-color: #ffc107;
-      color: #000;
+    
+    .btn-save:hover {
+      transform: translateY(-2px);
     }
-    .disabled-btn { opacity: 0.5; pointer-events: none; }
-    .is-invalid-field { border-color: #dc3545; }
-    .error-message { display:none; color:#dc3545; font-size:.875rem; margin-top:.25rem; }
-    .payment-box { border:1px solid #ddd; border-radius:.75rem; padding:1rem; cursor:pointer; transition:.2s; }
-    .payment-box:hover { background:#f9f9f9; }
-    .payment-box.active { border-color:#0d6efd; box-shadow:0 0 0 .2rem rgba(13,110,253,.15); background:#e7f1ff; }
-    .fixed-footer { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; padding:.75rem; z-index:1000; }
-    .section-title { font-weight:600; }
-    .autocomplete-wrapper { position: relative; }
+    
+    .loading-spinner {
+      text-align: center;
+      padding: 40px 20px;
+      color: #ffca1d;
+    }
+    
+    .order-not-found {
+      text-align: center;
+      padding: 40px 20px;
+      color: #ffa034;
+    }
+    
+    .order-not-found i {
+      color: #f39c12;
+      margin-bottom: 20px;
+    }
+    
+    .autocomplete-wrapper {
+      position: relative;
+    }
+    
     .autocomplete-items {
       position: absolute;
       border: 1px solid #ddd;
       border-top: none;
-      z-index: 9999;
-      background: white;
-      width: 100%;
+      z-index: 99;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: white;
+      border-radius: 0 0 8px 8px;
       max-height: 200px;
       overflow-y: auto;
+    
     }
+    
     .autocomplete-item {
-      padding: 8px 12px;
+      padding: 10px 15px;
       cursor: pointer;
       border-bottom: 1px solid #f1f1f1;
     }
+    
     .autocomplete-item:hover, .autocomplete-item.active {
-      background: #f1f1f1;
+      background-color: rgba(255, 202, 29, 0.1);
     }
+    
     .no-results {
-      padding: 8px 12px;
-      color: #6c757d;
+      padding: 10px 15px;
+      color: #777;
       font-style: italic;
-      text-align: center;
     }
-    .pod-no-field.optional {
-      opacity: 0.7;
-    }
-    .pod-no-field.optional label::after {
+    
+    .optional .form-label::after {
       content: " (Optional)";
-      color: #6c757d;
       font-weight: normal;
-    }
-    .payment-disabled {
-      opacity: 0.5;
-      pointer-events: none;
-      cursor: not-allowed;
-    }
-    .payment-disabled:hover {
-      background: #f9f9f9 !important;
-    }
-    .main-content {
-      margin-bottom: 100px;
-    }
-    .loading-spinner {
-      display: none;
-      text-align: center;
-      padding: 2rem;
-    }
-    .order-not-found {
-      display: none;
-      text-align: center;
-      padding: 2rem;
       color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+      .app-header {
+        padding: 12px 15px;
+        font-size: 1.1rem;
+      }
+      
+      .card-body {
+        padding: 15px;
+      }
+      
+      .section-title {
+        font-size: 1.1rem;
+      }
+      
+      .payment-box {
+        padding: 10px 5px;
+        font-size: 0.9rem;
+      }
+      
+      .payment-box i {
+        font-size: 1.5rem;
+      }
     }

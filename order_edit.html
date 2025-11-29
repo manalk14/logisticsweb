@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../fontawesome-free-7.1.0-web/fontawesome-free-7.1.0-web/css/all.min.css" />
   
   <style>
-    /* Custom Header Styles */
+    /* Your existing CSS styles remain the same */
     .app-header {
       background: #ffca1d;
       color: rgb(0, 0, 0);
@@ -34,7 +34,7 @@
     .header-title {
       flex-grow: 1;
       text-align: left;
-      margin-right: 40px; /* To balance the back button space */
+      margin-right: 40px;
       font-style: bold;
     }
     
@@ -43,7 +43,6 @@
       margin: 0 auto;
     }
     
-    /* Form Styles */
     .card {
       border: none;
       border-radius: 12px;
@@ -62,12 +61,12 @@
     }
     
     .section-title i {
-      color: #ffca1d;
+      color: #000000;
     }
     
     .form-label {
       font-weight: 500;
-      color: #ffa034;
+      color: #000000;
       margin-bottom: 8px;
     }
     
@@ -153,7 +152,7 @@
     .loading-spinner {
       text-align: center;
       padding: 40px 20px;
-      color: #ffca1d;
+      color: #000000;
     }
     
     .order-not-found {
@@ -471,25 +470,51 @@ let isConsignerFromDropdown = false;
 
 // Check for app_id on page load
 document.addEventListener('DOMContentLoaded', function() {
-  // Get app_id from localStorage
-  app_id = localStorage.getItem("app_id");
+  const app_id = localStorage.getItem("app_id");
   
   if (!app_id) {
     alert("Error: app_id not found in localStorage. Please login again.");
-    window.location.href = 'login.html'; // Redirect to login page
+    window.location.href = 'login.html';
     return;
   }
 });
 
 // API Configuration
 const BASE_URL = "https://www.loginlogistics.in/main/driverapp/";
-const API_ENDPOINTS = {
-  myOrders: "my-orders.php",
-  editOrder: "edit-order.php",
-  city: "get_city.php",
-  consignee: "get_consignee.php",
-  consigner: "get_consigner.php"
-};
+const UPDATE_ORDER_API = "https://www.loginlogistics.in/main/driverapp/action/update-order.php";
+
+// Simple fetch function without CORS proxies that often fail
+async function safeFetch(url, options = {}) {
+  try {
+    // Try direct fetch first
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    
+    // If direct fetch fails due to CORS, try with no-cors mode for simple requests
+    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+      console.log('CORS error detected, trying alternative approach...');
+      
+      // For simple data submission, you might need to use form submission
+      // or contact the API provider to enable CORS
+      throw new Error('CORS policy blocks the request. Please contact the API provider to enable CORS headers.');
+    }
+    
+    throw error;
+  }
+}
 
 /* -------------------------
    Get Order ID (URL or Storage)
@@ -537,39 +562,34 @@ async function fetchOrder(orderId) {
   };
 
   try {
-    const response = await fetch(BASE_URL + API_ENDPOINTS.editOrder, {
+    const response = await safeFetch(BASE_URL + "edit-order.php", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
 
     const data = await response.json();
     console.log("Response data:", data);
 
-    // 🚨 FIX: API returns SINGLE object, not an array
     if (!data || !data.ord_id) {
       showNotFound();
       return;
     }
 
-    // Pass response object directly
     populateForm(data);
-
     showLoading(false);
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching order:", err);
     showNotFound();
   }
 }
 
-
 /* -------------------------
-   Populate Form - UPDATED FOR YOUR API STRUCTURE
+   Populate Form
 -------------------------*/
 function populateForm(order) {
   console.log("Populating form with:", order);
 
-  // Map API fields to form fields based on your API response
+  // Map API fields to form fields
   document.getElementById("companyName").value = order.consignor_name || "";
   document.getElementById("supplierInvoice").value = order.supp_inv_no || "";
   document.getElementById("podNo").value = order.pod_no || "";
@@ -592,18 +612,7 @@ function populateForm(order) {
     updatePaymentOptions();
   }
 
-  // Set city IDs if available
-  if (order.consignor_cityId) {
-    document.getElementById("city").dataset.selectedId = order.consignor_cityId;
-  }
-  if (order.consignee_cityId) {
-    document.getElementById("cCity").dataset.selectedId = order.consignee_cityId;
-  }
-  if (order.consigneeId) {
-    document.getElementById("cName").dataset.selectedId = order.consigneeId;
-  }
-
-  // Populate Box and Cover data from individual fields
+  // Populate Box and Cover data
   populatePackagingData(order);
 
   // Payment Restore
@@ -614,7 +623,7 @@ function populateForm(order) {
 }
 
 /* -------------------------
-   Populate Packaging Data from Individual Fields
+   Populate Packaging Data
 -------------------------*/
 function populatePackagingData(order) {
   // Box data
@@ -663,42 +672,11 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
   
   const wrapper = input.parentElement;
   let currentList;
-  let currentFocus = -1;
 
   function removeCurrentList() {
     if (currentList) {
       currentList.remove();
       currentList = null;
-      currentFocus = -1;
-    }
-  }
-
-  function setActive(items, direction) {
-    if (!items) return;
-    
-    removeActive(items);
-    
-    if (direction === 'down') {
-      currentFocus++;
-      if (currentFocus >= items.length) currentFocus = 0;
-    } else if (direction === 'up') {
-      currentFocus--;
-      if (currentFocus < 0) currentFocus = items.length - 1;
-    }
-    
-    if (currentFocus >= 0 && currentFocus < items.length) {
-      items[currentFocus].classList.add('active');
-      items[currentFocus].scrollIntoView({ block: 'nearest' });
-    }
-  }
-
-  function removeActive(items) {
-    items.forEach(item => item.classList.remove('active'));
-  }
-
-  function selectActiveItem(items) {
-    if (currentFocus > -1 && items && items[currentFocus]) {
-      items[currentFocus].click();
     }
   }
 
@@ -706,7 +684,6 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
     const val = this.value.trim().toLowerCase();
     removeCurrentList();
     
-    // Reset consigner flag when user types manually or clears the field
     if (inputId === "companyName") {
       if (!this.dataset.selectedId || this.value !== this.dataset.originalValue) {
         isConsignerFromDropdown = false;
@@ -730,9 +707,8 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
       term: val
     };
 
-    fetch(BASE_URL + endpoint, {
+    safeFetch(BASE_URL + endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     })
     .then(r => r.json())
@@ -764,7 +740,6 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
             input.dataset.selectedId = id;
             input.dataset.originalValue = text;
 
-            // Set consigner flag when selected from dropdown
             if (inputId === "companyName") {
               isConsignerFromDropdown = true;
               updatePodNoField();
@@ -787,36 +762,10 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
     });
   });
 
-  // Keyboard navigation
-  input.addEventListener("keydown", function(e) {
-    const items = currentList ? currentList.querySelectorAll('.autocomplete-item') : null;
-    
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (items && items.length > 0) {
-        setActive(items, 'down');
-      }
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (items && items.length > 0) {
-        setActive(items, 'up');
-      }
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (items && items.length > 0) {
-        selectActiveItem(items);
-      }
-    } else if (e.key === 'Escape') {
-      removeCurrentList();
-    }
-  });
-
-  // Close dropdown when input loses focus
   input.addEventListener("blur", function() {
     setTimeout(removeCurrentList, 150);
   });
 
-  // Add event listener for manual clearing
   input.addEventListener('change', function() {
     if (inputId === "companyName") {
       if (this.dataset.selectedId && this.value !== this.dataset.originalValue) {
@@ -830,7 +779,6 @@ function createAutocomplete(inputId, endpoint, listKey, displayKey, valueKey, on
   });
 }
 
-// Function to auto-fill city and address when consigner is selected
 function onConsignerSelect(selectedItem) {
   const cityInput = document.getElementById('city');
   const addressInput = document.getElementById('address');
@@ -845,7 +793,6 @@ function onConsignerSelect(selectedItem) {
   }
 }
 
-// Function to auto-fill city and route when consignee is selected
 function onConsigneeSelect(selectedItem) {
   const cityInput = document.getElementById('cCity');
   const addressInput = document.getElementById('cAddress');
@@ -868,7 +815,7 @@ function onConsigneeSelect(selectedItem) {
 function initAutocomplete() {
   createAutocomplete(
     "companyName",
-    API_ENDPOINTS.consigner,
+    "get_consigner.php",
     "consignordet",
     "company_name",
     "stcompanyid",
@@ -877,7 +824,7 @@ function initAutocomplete() {
 
   createAutocomplete(
     "city",
-    API_ENDPOINTS.city,
+    "get_city.php",
     "citydet",
     "city_name",
     "cityid"
@@ -885,7 +832,7 @@ function initAutocomplete() {
 
   createAutocomplete(
     "cName",
-    API_ENDPOINTS.consignee,
+    "get_consignee.php",
     "consigneedet",
     "dst_company_name",
     "dstcompanyid",
@@ -894,7 +841,7 @@ function initAutocomplete() {
 
   createAutocomplete(
     "cCity",
-    API_ENDPOINTS.city,
+    "get_city.php",
     "citydet",
     "city_name",
     "cityid"
@@ -957,7 +904,7 @@ function selectPayment(type) {
 }
 
 /* -------------------------
-   Save Changes - UPDATED FOR YOUR API STRUCTURE
+   Save Changes - UPDATED FOR PROPER API STRUCTURE
 -------------------------*/
 document.getElementById("saveButton").addEventListener("click", async () => {
   if (!currentOrderId) {
@@ -970,7 +917,6 @@ document.getElementById("saveButton").addEventListener("click", async () => {
   let isValid = true;
   
   requiredFields.forEach(field => {
-    // Skip validation for POD No when consigner is from dropdown
     if (field.id === 'podNo' && isConsignerFromDropdown) {
       return;
     }
@@ -1009,98 +955,49 @@ document.getElementById("saveButton").addEventListener("click", async () => {
     return;
   }
 
-  // Collect packaging data
-  const boxData = {
-    small: { qty: 0, price: 0 },
-    medium: { qty: 0, price: 0 },
-    large: { qty: 0, price: 0 },
-    xlarge: { qty: 0, price: 0 }
-  };
-
-  const coverData = {
-    small: { qty: 0, price: 0 },
-    medium: { qty: 0, price: 0 },
-    large: { qty: 0, price: 0 },
-    xlarge: { qty: 0, price: 0 }
-  };
-
-  document.querySelectorAll('.box-qty').forEach(input => {
-    const size = input.dataset.size;
-    const value = parseInt(input.value) || 0;
-    if (value > 0) boxData[size].qty = value;
-  });
-
-  document.querySelectorAll('.box-price').forEach(input => {
-    const size = input.dataset.size;
-    const value = parseFloat(input.value) || 0;
-    if (value > 0) boxData[size].price = value;
-  });
-
-  document.querySelectorAll('.cover-qty').forEach(input => {
-    const size = input.dataset.size;
-    const value = parseInt(input.value) || 0;
-    if (value > 0) coverData[size].qty = value;
-  });
-
-  document.querySelectorAll('.cover-price').forEach(input => {
-    const size = input.dataset.size;
-    const value = parseFloat(input.value) || 0;
-    if (value > 0) coverData[size].price = value;
-  });
-
-  // Updated body structure to match your API
-  const body = {
-    app_id: localStorage.getItem("app_id") || "Mzk-",
+  // Prepare the data in the exact format expected by your API
+  const requestData = {
+    app_id: localStorage.getItem("app_id"),
     ord_id: currentOrderId,
-    consignor_name: document.getElementById("companyName").value,
-    consignorId: document.getElementById("companyName").dataset.selectedId || '',
+    consignee: document.getElementById("cName").value,
+    consignor: document.getElementById("companyName").value,
+    // Add other fields that your API expects
     supp_inv_no: document.getElementById("supplierInvoice").value,
     pod_no: document.getElementById("podNo").value,
     consignor_city: document.getElementById("city").value,
-    consignor_cityId: document.getElementById("city").dataset.selectedId || '',
     consignor_address: document.getElementById("address").value,
     consignor_phone: document.getElementById("phone").value,
-    consignee_name: document.getElementById("cName").value,
-    consigneeId: document.getElementById("cName").dataset.selectedId || '',
     consignee_city: document.getElementById("cCity").value,
-    consignee_cityId: document.getElementById("cCity").dataset.selectedId || '',
     route: document.getElementById("cRoute").value,
     consignee_phone: document.getElementById("cPhone").value,
     consignee_address: document.getElementById("cAddress").value,
-    payment_type: selectedPayment,
-    box_data: JSON.stringify(boxData),
-    cover_data: JSON.stringify(coverData)
+    payment_type: selectedPayment
   };
 
- // Add this line right before the fetch call
-printUpdatedDataToConsole(body);
+  console.log("Sending data to API:", requestData);
 
-// Your existing fetch call
-try {
-  const response = await fetch("https://www.loginlogistics.in/main/driverapp/action/update-order.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  // ... rest of your code
+  try {
+    const response = await safeFetch(UPDATE_ORDER_API, {
+      method: "POST",
+      body: JSON.stringify(requestData)
+    });
 
     const result = await response.json();
-    console.log("Save response:", result);
+    console.log("API Response:", result);
 
-    alert(result.message || "Order Updated Successfully!");
+    if (result.success || result.message) {
+      alert(result.message || "Order Updated Successfully!");
+      // Optionally redirect back to orders page
+      // window.location.href = 'view_order.html';
+    } else {
+      alert("Update failed: " + (result.error || "Unknown error"));
+    }
   } catch (err) {
     console.error("Error updating order:", err);
-    alert("Server error, please try again later.");
+    alert("Failed to update order: " + err.message);
   }
 });
-/* -------------------------
-   Console Print Updated Data in JSON Format
--------------------------*/
-function printUpdatedDataToConsole(body) {
-  console.log("=== UPDATED ORDER DATA (JSON) ===");
-  console.log(JSON.stringify(body, null, 2));
-  console.log("=== END UPDATED DATA ===");
-}
+
 /* -------------------------
    Back Button
 -------------------------*/
